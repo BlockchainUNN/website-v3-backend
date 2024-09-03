@@ -52,12 +52,12 @@ To run this project locally, follow these steps:
     │   └── schema.prisma
     ├── src/
     │   ├── controllers/
-    │   │   ├── admin/ - [Folder specifically for admin related controllers.]
+    │   │   ├── admin/
     │   │   └── auth.controllers.ts
     │   ├── middlewares/
     │   │   └── auth.middleware.ts
     │   ├── routes/
-    │   │   ├── admin/ - [Folder specifically for admin related controllers.]
+    │   │   ├── admin/
     │   │   └── auth.routes.ts
     │   ├── swagger/
     │   │   └── swagger.ts
