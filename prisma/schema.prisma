@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// DEVELOPMENT DB - JSON Fields do not work with sqlite so i we will create a database on vercel or something for development.
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// PRODUCTION DB
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+// 1. Users Table
+model Users {
+  id            Int      @id @default(autoincrement())
+  uid           String   @unique @default(uuid())
+  firstName     String   
+  lastName      String   
+  email         String   @unique 
+  password      String   // HASHED PASSWORD
+  // sub_community Json 
+  roles         String?
+  profilePic    Image?      @relation(fields: [profilePicid], references: [id])
+  profilePicid  Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+}
+
+// 2. Blog Posts Table
+model BlogPost {
+  id           Int      @id @default(autoincrement())
+  uid          String   @unique @default(uuid())
+  title        String   
+  previewImage String   
+  content      String   
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  blogPostAuthors BlogPostAuthor[]
+}
+
+// 3. Blog Authors Table
+model BlogAuthor {
+  id          Int      @id @default(autoincrement())
+  name        String   
+  roleSkill   String   
+  // socialLinks Json     
+  createdAt   DateTime @default(now())
+
+  // Relations
+  blogPostAuthors BlogPostAuthor[]
+}
+
+// 4. Blog Post Authors Table
+model BlogPostAuthor {
+  id        Int       @id @default(autoincrement())
+  // post      Post?     @relation(fields: [postId], references: [id])
+  postId    Int       // TODO: The above needs to be added when post table is created
+  authorId  Int       // TODO: Similar case
+
+  // Relations
+  blogPost  BlogPost  @relation(fields: [postId], references: [id])
+  author    BlogAuthor @relation(fields: [authorId], references: [id])
+}
+
+// 5. Images Table
+model Image {
+  id          Int      @id @default(autoincrement())
+  name        String   
+  imageUrl    String   
+  description String?  
+  createdAt   DateTime @default(now())
+
+  // Relations
+  users        Users[]
+}
