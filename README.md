@@ -46,34 +46,32 @@ To run this project locally, follow these steps:
 
 ## File Structure
 
-    ```bash
-        website-v3-backend/
-        ├── prisma/
-        │   ├── client.ts
-        │   └── schema.prisma
-        ├── src/
-        │   ├── controllers/
-        │   │   ├── admin/ - [Folder specifically for admin related controllers.]
-        │   │   └── auth.controllers.ts
-        │   ├── middlewares/
-        │   │   └── auth.middleware.ts
-        │   ├── routes/
-        │   │   ├── admin/ - [Folder specifically for admin related controllers.]
-        │   │   └── auth.routes.ts
-        │   ├── swagger/
-        │   │   └── swagger.ts
-        │   ├── types/
-        │   │   └── auth.types.ts
-        │   ├── utils/
-        │   │   └── responseHandlers.ts
-        │   └── server.ts
-        ├── .env.example
-        ├── .gitignore
-        ├── package-lock.json
-        ├── package.json
-        ├── README.md
-        └── tsconfig.json
-    ```
+    website-v3-backend/
+    ├── prisma/
+    │   ├── client.ts
+    │   └── schema.prisma
+    ├── src/
+    │   ├── controllers/
+    │   │   ├── admin/ - [Folder specifically for admin related controllers.]
+    │   │   └── auth.controllers.ts
+    │   ├── middlewares/
+    │   │   └── auth.middleware.ts
+    │   ├── routes/
+    │   │   ├── admin/ - [Folder specifically for admin related controllers.]
+    │   │   └── auth.routes.ts
+    │   ├── swagger/
+    │   │   └── swagger.ts
+    │   ├── types/
+    │   │   └── auth.types.ts
+    │   ├── utils/
+    │   │   └── responseHandlers.ts
+    │   └── server.ts
+    ├── .env.example
+    ├── .gitignore
+    ├── package-lock.json
+    ├── package.json
+    ├── README.md
+    └── tsconfig.json
 
 ### Folder Descriptions:
 
