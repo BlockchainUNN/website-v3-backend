@@ -46,7 +46,7 @@ To run this project locally, follow these steps:
 
 ## File Structure
 
-    ```
+    ```bash
         website-v3-backend/
         ├── prisma/
         │   ├── client.ts
