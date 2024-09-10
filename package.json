@@ -4,8 +4,7 @@
   "description": "Repo for the backend of blockchainUNN's website",
   "main": "./src/server.ts",
   "scripts": {
-    "dev": "npx nodemon ./src/server.ts",
-    "swagger": "ts-node ./src/swagger.ts ",
+    "dev": "npx nodemon ./src/swagger/swagger.ts --ignore ./src/swagger/swagger-output.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

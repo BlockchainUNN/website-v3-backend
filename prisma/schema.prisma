@@ -5,81 +5,205 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// DEVELOPMENT DB - JSON Fields do not work with sqlite so i we will create a database on vercel or something for development.
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// PRODUCTION DB
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-
-// 1. Users Table
-model Users {
-  id            Int      @id @default(autoincrement())
-  uid           String   @unique @default(uuid())
-  firstName     String   
-  lastName      String   
-  email         String   @unique 
-  password      String   // HASHED PASSWORD
-  // sub_community Json 
-  roles         String?
-  profilePic    Image?      @relation(fields: [profilePicid], references: [id])
-  profilePicid  Int?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
+model Role {
+  id   Int    @id @default(autoincrement())
+  role String
+  User User[]
 }
 
-// 2. Blog Posts Table
+// NOTE: To self or any future devs on this project.
+//       User model has no password by default, but when making
+//       user an admin, hacker or giving the user a role they will
+//       need to provide a password. I prevent impersonation and as an
+//       extra layer of security just before any form of password creation
+model User {
+  id              Int             @id @default(autoincrement())
+  uid             String          @unique @default(uuid())
+  first_name      String
+  last_name       String
+  email           String
+  hashed_password String?
+  roles           Role?           @relation(fields: [roleId], references: [id])
+  sub_community   Json?
+  profile_pic     Int?
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  eventAttendee   EventAttendee[]
+  event           Event[]         @relation("EventHost")
+  roleId          Int?
+  Hacker          Hacker?
+}
+
 model BlogPost {
-  id           Int      @id @default(autoincrement())
-  uid          String   @unique @default(uuid())
-  title        String   
-  previewImage String   
-  content      String   
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  blogPostAuthors BlogPostAuthor[]
+  id            Int              @id @default(autoincrement())
+  uid           String           @unique @default(uuid())
+  title         String
+  preview_image String
+  content       String
+  created_at    DateTime         @default(now())
+  updated_at    DateTime         @updatedAt
+  authors       BlogPostAuthor[]
 }
 
-// 3. Blog Authors Table
 model BlogAuthor {
-  id          Int      @id @default(autoincrement())
-  name        String   
-  roleSkill   String   
-  // socialLinks Json     
-  createdAt   DateTime @default(now())
-
-  // Relations
-  blogPostAuthors BlogPostAuthor[]
+  id            Int              @id @default(autoincrement())
+  name          String
+  role_skill    String
+  x_url         String?
+  linkedin_url  String?
+  instagram_url String?
+  facebook_url  String?
+  discord_url   String?
+  created_at    DateTime         @default(now())
+  posts         BlogPostAuthor[]
 }
 
-// 4. Blog Post Authors Table
 model BlogPostAuthor {
-  id        Int       @id @default(autoincrement())
-  // post      Post?     @relation(fields: [postId], references: [id])
-  postId    Int       // TODO: The above needs to be added when post table is created
-  authorId  Int       // TODO: Similar case
-
-  // Relations
-  blogPost  BlogPost  @relation(fields: [postId], references: [id])
-  author    BlogAuthor @relation(fields: [authorId], references: [id])
+  id        Int        @id @default(autoincrement())
+  post_id   Int
+  author_id Int
+  post      BlogPost   @relation(fields: [post_id], references: [id])
+  author    BlogAuthor @relation(fields: [author_id], references: [id])
 }
 
-// 5. Images Table
 model Image {
-  id          Int      @id @default(autoincrement())
-  name        String   
-  imageUrl    String   
-  description String?  
-  createdAt   DateTime @default(now())
+  id           Int            @id @default(autoincrement())
+  name         String
+  image_url    String
+  description  String?
+  created_at   DateTime       @default(now())
+  eventGallery EventGallery[]
+}
 
-  // Relations
-  users        Users[]
+model Event {
+  id              Int             @id @default(autoincrement())
+  uid             String          @unique @default(uuid())
+  name            String
+  cover_image     String
+  description     String
+  start_date      DateTime
+  end_date        DateTime
+  location        String
+  host_id         Int
+  attendees_count Int
+  max_attendees   Int
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  eventGallery    EventGallery[]
+  eventAttendee   EventAttendee[]
+  cohosts         EventCohost[]
+  host            User            @relation("EventHost", fields: [host_id], references: [id])
+}
+
+model EventCohost {
+  id            Int     @id @default(autoincrement())
+  event_id      Int
+  name          String
+  role_skill    String
+  x_url         String?
+  linkedin_url  String?
+  instagram_url String?
+  facebook_url  String?
+  discord_url   String?
+  event         Event   @relation(fields: [event_id], references: [id])
+}
+
+model Hackathon {
+  id                    Int                 @id @default(autoincrement())
+  uid                   String              @unique @default(uuid())
+  name                  String
+  description           String
+  start_date            DateTime
+  end_date              DateTime
+  registration_deadline DateTime
+  created_at            DateTime            @default(now())
+  updated_at            DateTime            @updatedAt
+  categories            HackathonCategory[]
+  schedule              HackathonSchedule[]
+  submissions           Submission[]
+  teams                 Team[]
+}
+
+model HackathonCategory {
+  id           Int       @id @default(autoincrement())
+  hackathon_id Int
+  name         String
+  description  String
+  hackathon    Hackathon @relation(fields: [hackathon_id], references: [id])
+}
+
+model HackathonSchedule {
+  id           Int       @id @default(autoincrement())
+  hackathon_id Int
+  name         String
+  start_time   DateTime
+  end_time     DateTime
+  description  String
+  hackathon    Hackathon @relation(fields: [hackathon_id], references: [id])
+}
+
+model Hacker {
+  id              Int      @id @default(autoincrement())
+  user_id         Int      @unique
+  hashed_password String
+  team_id         Int?
+  registered_at   DateTime @default(now())
+  user            User     @relation(fields: [user_id], references: [id])
+  team            Team?    @relation(fields: [team_id], references: [id])
+}
+
+model Team {
+  id           Int          @id @unique @default(autoincrement())
+  name         String
+  hackathon_id Int
+  invite_code  String       @unique
+  created_by   Int
+  created_at   DateTime     @default(now())
+  submission   Submission[]
+  hackathon    Hackathon    @relation(fields: [hackathon_id], references: [id])
+  hackers      Hacker[]
+}
+
+model Submission {
+  id                  Int               @id @unique @default(autoincrement())
+  team_id             Int
+  hackathon_id        Int
+  project_name        String
+  project_description String
+  github_links        String
+  demo_video_link     String
+  live_demo_link      String
+  documentation_link  String
+  submitted_at        DateTime          @default(now())
+  images              SubmissionImage[]
+  hackathon           Hackathon         @relation(fields: [hackathon_id], references: [id])
+  team                Team              @relation(fields: [team_id], references: [id])
+}
+
+model SubmissionImage {
+  id            Int        @id @default(autoincrement())
+  image_url     String
+  submission_id Int
+  submission    Submission @relation(fields: [submission_id], references: [id])
+}
+
+model EventGallery {
+  id       Int   @id @default(autoincrement())
+  image_id Int
+  event_id Int
+  image    Image @relation(fields: [image_id], references: [id])
+  event    Event @relation(fields: [event_id], references: [id])
+}
+
+model EventAttendee {
+  id          Int   @id @default(autoincrement())
+  attendee_id Int
+  event_id    Int
+  user        User  @relation(fields: [attendee_id], references: [id])
+  event       Event @relation(fields: [event_id], references: [id])
 }

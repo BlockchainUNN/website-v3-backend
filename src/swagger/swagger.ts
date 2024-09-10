@@ -1,5 +1,5 @@
 import swaggerAutogen from "swagger-autogen";
-import { BASE_PATH, HOST } from "../server";
+import { HOST } from "../server";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -10,7 +10,7 @@ const doc = {
     description: "API Documentation for BlockchainUNN website version 3",
   },
   host: HOST,
-  basePath: BASE_PATH,
+  // basePath: BASE_PATH,
   securityDefinitions: {
     apiKeyAuth: {
       type: "apiKey",

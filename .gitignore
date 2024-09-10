@@ -4,4 +4,3 @@ node_modules
 node_modules
 dev.db
 dev.db-journal
-migrations
