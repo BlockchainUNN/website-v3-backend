@@ -42,7 +42,7 @@ app.get("/testing-middleware", (req: Request, res: Response) => {
   /* #swagger.security = [{
             "apiKeyAuth": []
     }] */
-  res.status(200);
+  res.status(200).json({ message: "successful" });
 });
 
 //initializing server
