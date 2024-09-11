@@ -19,6 +19,16 @@ const doc = {
       description: "Authorization: Bearer <token>",
     },
   },
+  components: {
+    securitySchemes: {
+      apiKeyAuth: {
+        type: "apiKey",
+        in: "header", // can be 'header', 'query' or 'cookie'
+        name: "Authorization", // name of the header, query parameter or cookie
+        description: "Authorization: Bearer <token>",
+      },
+    },
+  },
 };
 
 const outputFile = "./swagger-output.json";

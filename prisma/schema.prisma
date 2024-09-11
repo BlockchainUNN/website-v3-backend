@@ -12,7 +12,7 @@ datasource db {
 
 model Role {
   id   Int    @id @default(autoincrement())
-  role String
+  role String @unique
   User User[]
 }
 
@@ -26,7 +26,7 @@ model User {
   uid             String          @unique @default(uuid())
   first_name      String
   last_name       String
-  email           String
+  email           String          @unique
   hashed_password String?
   roles           Role?           @relation(fields: [roleId], references: [id])
   sub_community   Json?
