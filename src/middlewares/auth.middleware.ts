@@ -33,7 +33,7 @@ const protectRoute = async (
         }
         console.log("Decoded Token ===>> ", decoded); // Verify that after expiration the token becomes invalid and throws error.
         // Add user object to the request object.
-        return;
+        next();
       });
     } catch (error) {
       return errorResponse(

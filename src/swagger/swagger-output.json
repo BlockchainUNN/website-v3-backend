@@ -29,6 +29,21 @@
         }
       }
     },
+    "/testing-middleware": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/api/v3/register": {
       "post": {
         "tags": [
@@ -367,6 +382,16 @@
             }
           }
         }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Authorization: Bearer <token>"
       }
     }
   }

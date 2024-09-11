@@ -38,7 +38,10 @@ app.use("/api/v3/", adminAuthRoutes);
 // PROTECTED ROUTES BELOW HERE
 app.use(AuthMiddleware.protectRoute);
 // Testing middleware
-app.get("/", (req: Request, res: Response) => {
+app.get("/testing-middleware", (req: Request, res: Response) => {
+  /* #swagger.security = [{
+            "apiKeyAuth": []
+    }] */
   res.status(200);
 });
 
