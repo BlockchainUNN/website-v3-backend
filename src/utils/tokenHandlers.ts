@@ -25,6 +25,5 @@ export function createAuthTokens(user: TokenUserType) {
     { expiresIn: `${expiration_time_refresh}d` }
   );
 
-  console.table({ access, refresh });
   return { access, refresh };
 }

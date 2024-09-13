@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { errorResponse } from "../utils/responseHandlers";
 import jwt from "jsonwebtoken";
+import { TokenUserType } from "../types/auth.types";
 
 const SECRET_KEY = process.env?.SECRET_KEY || "random_string";
 
@@ -31,11 +32,17 @@ const protectRoute = async (
         if (err) {
           throw err;
         }
-        console.log("Decoded Token ===>> ", decoded); // Verify that after expiration the token becomes invalid and throws error.
-        // Add user object to the request object.
+
+        const currentUser: TokenUserType = JSON.parse(
+          JSON.stringify(decoded?.sub)
+        );
+        req.user = currentUser;
         next();
       });
     } catch (error) {
+      /* 
+        #swagger.responses[401] = {description: 'Unauthorized', schema: {error: 'You are not authorized to use this service.', data: {details: "If more info is available it will be here."}}} 
+      */
       return errorResponse(
         res,
         401,

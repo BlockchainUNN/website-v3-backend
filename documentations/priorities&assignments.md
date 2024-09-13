@@ -2,7 +2,7 @@
 
 ### 1. Peter
 
-- [ ] **Create User**
+- [x] **Create User**
 
   - **Method:** POST
   - **Path:** `/users/`
