@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes";
 import AuthMiddleware from "./middlewares/auth.middleware";
 import { readFileSync } from "fs";
 import adminAuthRoutes from "./routes/admin/auth.routes";
+import userRoutes from "./routes/users.routes";
 
 dotenv.config();
 const app = express();
@@ -27,13 +28,14 @@ app.use("/api/v3/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 // Default Route
 app.get("/", (req: Request, res: Response) => {
   res.send(
-    `<div>View API Documentation @ <a href="${HOST}/api/v3/doc">${HOST}/api/v3/doc</a><div>`
+    `<div>View API Documentation @ <a href="http://${HOST}/api/v3/doc">${HOST}/api/v3/doc</a><div>`
   );
 });
 
 // ROUTES HERE
 app.use("/api/v3/", authRoutes);
 app.use("/api/v3/", adminAuthRoutes);
+app.use("/api/v3/", userRoutes);
 
 // PROTECTED ROUTES BELOW HERE
 app.use(AuthMiddleware.protectRoute);

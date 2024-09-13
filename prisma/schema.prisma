@@ -75,6 +75,7 @@ model Image {
   id           Int            @id @default(autoincrement())
   name         String
   image_url    String
+  public_id    String
   description  String?
   created_at   DateTime       @default(now())
   eventGallery EventGallery[]
@@ -151,12 +152,17 @@ model HackathonSchedule {
 model Hacker {
   id              Int      @id @default(autoincrement())
   user_id         Int      @unique
-  hashed_password String
   team_id         Int?
   registered_at   DateTime @default(now())
   user            User     @relation(fields: [user_id], references: [id])
   team            Team?    @relation(fields: [team_id], references: [id])
 }
+
+// hacker team join table
+// id
+// hacker id
+// team id
+// hackathon id (unique together with team id)
 
 model Team {
   id           Int          @id @unique @default(autoincrement())
