@@ -9,6 +9,8 @@ import AuthMiddleware from "./middlewares/auth.middleware";
 import { readFileSync } from "fs";
 import adminAuthRoutes from "./routes/admin/auth.routes";
 import userRoutes from "./routes/users.routes";
+import roleRoutes from "./routes/admin/roles.routes";
+import { permissionsCheck } from "./middlewares/permissions.middleware";
 
 dotenv.config();
 const app = express();
@@ -39,13 +41,7 @@ app.use("/api/v3/", userRoutes);
 
 // PROTECTED ROUTES BELOW HERE
 app.use(AuthMiddleware.protectRoute);
-// Testing middleware
-app.get("/testing-middleware", (req: Request, res: Response) => {
-  /* #swagger.security = [{
-            "apiKeyAuth": []
-    }] */
-  res.status(200).json({ message: "successful" });
-});
+app.use("/api/v3/", permissionsCheck({ role: "admin" }), roleRoutes);
 
 //initializing server
 app.listen(PORT, () => {

@@ -10,7 +10,7 @@ import bycrypt from "bcrypt";
 import { createAuthTokens } from "../../utils/tokenHandlers";
 
 const register = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Super Admin Auth']
+  // #swagger.tags = ['Admin Management']
   // #swagger.summary = 'Endpoint for creating a superadmin account'
 
   try {

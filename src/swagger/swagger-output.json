@@ -29,59 +29,7 @@
         }
       }
     },
-    "/testing-middleware": {
-      "get": {
-        "description": "",
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "You are not authorized to use this service."
-                },
-                "data": {
-                  "type": "object",
-                  "properties": {
-                    "details": {
-                      "type": "string",
-                      "example": "If more info is available it will be here."
-                    }
-                  }
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKeyAuth": []
-          }
-        ]
-      }
-    },
-    "/api/v3/register": {
-      "post": {
-        "tags": [
-          "Authentication"
-        ],
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/v3/login": {
+    "/api/v3/login/": {
       "post": {
         "tags": [
           "Authentication"
@@ -251,7 +199,7 @@
     "/api/v3/superadmin/register": {
       "post": {
         "tags": [
-          "Super Admin Auth"
+          "Admin Management"
         ],
         "summary": "Endpoint for creating a superadmin account",
         "description": "",
@@ -569,6 +517,148 @@
             }
           }
         }
+      }
+    },
+    "/api/v3/roles/": {
+      "post": {
+        "tags": [
+          "Admin Management"
+        ],
+        "summary": "Endpoint for assigning roles to other accounts.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "uid": {
+                  "type": "string",
+                  "example": "1234-4324-3233-342232"
+                },
+                "role": {
+                  "type": "string",
+                  "example": "admin"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User roles successfully updated"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "firstName": {
+                      "type": "string",
+                      "example": "Jon"
+                    },
+                    "lastName": {
+                      "type": "string",
+                      "example": "doe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "doe@mail.com"
+                    },
+                    "uid": {
+                      "type": "string",
+                      "example": "1123-3223-3433-34322"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "admin"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Invalid role: Acceptable roles are admin, event_admin, judge, writer."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Only superadmins can assign admin roles."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal Server Error"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
       }
     }
   },

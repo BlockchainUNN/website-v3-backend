@@ -28,7 +28,7 @@ const protectRoute = async (
     try {
       token = receivedToken.split(" ")[1]; // JWT
       // Check that the token is still valid
-      jwt.verify(token, SECRET_KEY, function (err, decoded) {
+      return jwt.verify(token, SECRET_KEY, function (err, decoded) {
         if (err) {
           throw err;
         }
@@ -37,7 +37,7 @@ const protectRoute = async (
           JSON.stringify(decoded?.sub)
         );
         req.user = currentUser;
-        next();
+        return next();
       });
     } catch (error) {
       /* 
@@ -51,6 +51,7 @@ const protectRoute = async (
       );
     }
   }
+
   if (!token) {
     return errorResponse(
       res,
@@ -58,7 +59,8 @@ const protectRoute = async (
       "You are not authorized to use this service, no token provided."
     );
   }
-  next();
+
+  return next();
 };
 
 const AuthMiddleware = { protectRoute };

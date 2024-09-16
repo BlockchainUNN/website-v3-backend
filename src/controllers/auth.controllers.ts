@@ -5,17 +5,6 @@ import prisma from "../../prisma/client";
 import bycrypt from "bcrypt";
 import { createAuthTokens } from "../utils/tokenHandlers";
 
-const register = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Authentication']
-  try {
-    // Handle logic
-    return successResponse(res, 200, "Successful Registration");
-  } catch (error) {
-    // Handle error
-    return errorResponse(res, 500, "Internal Error");
-  }
-};
-
 const login = async (req: Request, res: Response) => {
   // #swagger.tags = ['Authentication']
   // #swagger.summary = 'Endpoint for signing into an account'
@@ -170,5 +159,5 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-const auth = { register, login };
+const auth = { login };
 export default auth;
