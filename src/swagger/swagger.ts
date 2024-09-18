@@ -9,7 +9,7 @@ const doc = {
     title: "BlockchainUNN Website-v3 API",
     description: "API Documentation for BlockchainUNN website version 3",
   },
-  host: HOST,
+  host: process.env.EXTERNAL_HOST || HOST,
   // basePath: BASE_PATH,
   securityDefinitions: {
     apiKeyAuth: {
