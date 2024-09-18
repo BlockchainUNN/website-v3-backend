@@ -12,4 +12,11 @@ getUserRoutes.get(
   usersControllers.getUsers
 );
 
+getUserRoutes.get(
+  "/users/:id",
+  AuthMiddleware.protectRoute,
+  permissionsCheck({ allowOwner: true }), // Allow access for users and admins
+  usersControllers.getUserDetails
+);
+
 export default getUserRoutes;
