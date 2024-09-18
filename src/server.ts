@@ -12,6 +12,7 @@ import roleRoutes from "./routes/admin/roles.routes";
 import { permissionsCheck } from "./middlewares/permissions.middleware";
 import eventsRoutes from "./routes/events.routes";
 import getUserRoutes from "./routes/users/users.route";
+import getEventsRoutes from "./routes/events/events.routes";
 
 dotenv.config();
 const app = express();
@@ -42,6 +43,7 @@ app.use("/api/v3/", adminAuthRoutes);
 app.use("/api/v3/", userRoutes);
 app.use("/api/v3/", getUserRoutes);
 app.use("/api/v3/", eventsRoutes);
+app.use("/api/v3/", getEventsRoutes);
 
 // PROTECTED ROUTES BELOW HERE
 app.use(AuthMiddleware.protectRoute);

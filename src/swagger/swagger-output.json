@@ -754,6 +754,16 @@
         }
       }
     },
+    "/api/v3/events": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/v3/roles/": {
       "post": {
         "tags": [
