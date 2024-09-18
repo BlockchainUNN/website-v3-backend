@@ -15,8 +15,9 @@ import eventsRoutes from "./routes/events.routes";
 
 dotenv.config();
 const app = express();
-export const HOST = process.env.HOST;
-export const PORT = HOST?.split(":")[1] || 8000;
+export const PORT = process.env.PORT || 8000;
+export const HOST = process.env.HOST || `127.0.0.1:${PORT}`;
+const EXTERNAL_HOST = process.env.EXTERNAL_HOST || HOST;
 
 // Running routes
 app.use(cors());
@@ -31,7 +32,7 @@ app.use("/api/v3/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 // Default Route
 app.get("/", (req: Request, res: Response) => {
   res.send(
-    `<div>View API Documentation @ <a href="http://${HOST}/api/v3/doc">${HOST}/api/v3/doc</a><div>`
+    `<div>View API Documentation @ <a href="http://${EXTERNAL_HOST}/api/v3/doc">${EXTERNAL_HOST}/api/v3/doc</a><div>`
   );
 });
 
