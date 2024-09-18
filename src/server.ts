@@ -15,8 +15,8 @@ import eventsRoutes from "./routes/events.routes";
 
 dotenv.config();
 const app = express();
-export const PORT = process.env.PORT || 8000;
-export const HOST = process.env.HOST || `127.0.0.1:${PORT}`;
+export const HOST = process.env.HOST;
+export const PORT = HOST?.split(":")[1] || 8000;
 
 // Running routes
 app.use(cors());
