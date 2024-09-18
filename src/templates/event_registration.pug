@@ -1,0 +1,41 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Event Registration
+    link(rel="stylesheet", href="/css/styles.css")
+
+  body
+    header
+      h1 Register for Our Upcoming Event!
+      p Join us for an exciting event where you can network, learn, and grow.
+
+    section.event-details
+      h2 Event Details
+      p Name: Tech Conference 2024
+      p Date: November 5th, 2024
+      p Location: Virtual (Zoom)
+      p Time: 9 AM - 5 PM
+
+    section.registration-form
+      h2 Register Now
+
+      form(action="/register-event" method="POST")
+        label(for="name") Full Name
+        input#name(type="text" name="name" placeholder="Enter your full name" required)
+
+        label(for="email") Email
+        input#email(type="email" name="email" placeholder="Enter your email" required)
+
+        label(for="company") Company (optional)
+        input#company(type="text" name="company" placeholder="Enter your company")
+
+        label(for="skills") Skills/Interests (optional)
+        textarea#skills(name="skills" placeholder="Tell us about your skills or interests")
+
+        button(type="submit") Register
+
+    footer
+      p Questions? Contact us at 
+      a(href="mailto:support@example.com") support@example.com

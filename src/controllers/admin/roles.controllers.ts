@@ -14,17 +14,14 @@ const assignRoles = async (req: Request, res: Response) => {
             schema: { uid: "1234-4324-3233-342232", role: "admin"}
     } */
     const { uid, role } = req.body;
-    console.table({ uid, role });
 
     // Validations
-    // if (role === "superadmin")
-    //   // #swagger.responses[400] = {description: 'Bad Request', schema: {error: 'Invalid role: Acceptable roles are admin, event_admin, judge, writer.', data: {details: "If more info is available it will be here."}}}
-    //   return errorResponse(res, 400, "Role of superadmin can not be assigned");
-    // if (role === "admin" && req.user.role !== "superadmin")
-    //   // #swagger.responses[401] = {description: 'Unauthorized', schema: {error: 'Only superadmins can assign admin roles.', data: {details: "If more info is available it will be here."}}}
-    //   return errorResponse(res, 401, "Only superadmins can assign admin roles");
-
-    console.log("Passed Validations");
+    if (role === "superadmin")
+      // #swagger.responses[400] = {description: 'Bad Request', schema: {error: 'Invalid role: Acceptable roles are admin, event_admin, judge, writer.', data: {details: "If more info is available it will be here."}}}
+      return errorResponse(res, 400, "Role of superadmin can not be assigned");
+    if (role === "admin" && req.user.role !== "superadmin")
+      // #swagger.responses[401] = {description: 'Unauthorized', schema: {error: 'Only superadmins can assign admin roles.', data: {details: "If more info is available it will be here."}}}
+      return errorResponse(res, 401, "Only superadmins can assign admin roles");
 
     // Get or create role
     let userRole = await prisma.role.findUnique({
@@ -42,8 +39,6 @@ const assignRoles = async (req: Request, res: Response) => {
       }
     }
 
-    console.log("Has User roles. Passed this stage");
-
     // Update user account
     const user = await prisma.user.update({
       where: { uid },
@@ -51,8 +46,6 @@ const assignRoles = async (req: Request, res: Response) => {
       include: { roles: true },
     });
 
-    console.log("User got");
-    console.table(user);
     // #swagger.responses[200] = {description: 'Successful Request', schema: {message: 'User roles successfully updated', data: {firstName: "Jon",lastName: "doe",email: "doe@mail.com",uid: "1123-3223-3433-34322",role: "admin"}}}
     return successResponse(res, 200, "User roles successfully updated", {
       firstName: user.first_name,
@@ -62,8 +55,6 @@ const assignRoles = async (req: Request, res: Response) => {
       role: user?.roles?.role,
     });
   } catch (error) {
-    console.log("error => ", error);
-
     // Handle error
     // #swagger.responses[500] = {description: 'Internal Server Error', schema: {error: 'Internal Server Error', details: "If more info is available it will be here."}}
     // return errorResponse(res, 500, "Internal Error", error);
