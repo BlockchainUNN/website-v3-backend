@@ -4,6 +4,7 @@ import { isValidEmailAddress } from "../utils/validationHandlers";
 import { uploadSingleImage } from "../utils/imageUploadHandler";
 import { FileType } from "../types/files.types";
 import prisma from "../../prisma/client";
+import { sendMail } from "../utils/mailHandler";
 
 const create = async (req: Request, res: Response) => {
   // #swagger.tags = ['Users']
@@ -46,15 +47,23 @@ const create = async (req: Request, res: Response) => {
       where: { email: email },
     });
     if (existingUser) {
-      // Todo: resend email with community links and update intrested sub communities
-      /* 
-          #swagger.responses[200] = {description: 'Existing User', schema: {message: 'Email address associated with an existing community member. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}} 
-       */
-      return successResponse(
-        res,
-        200,
-        "Email address associated with an existing community member. Community Links have been sent to email address."
-      );
+      // Todo: Update this with the proper email.
+      const response = await sendMail(email, "Welcome Back", "onboarding", {});
+      if (response.rejected.includes(email))
+        // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
+        return errorResponse(
+          res,
+          403,
+          "Failed to deliver the email to the recipient. Please check the email address."
+        );
+
+      if (response.accepted.includes(email))
+        // #swagger.responses[200] = {description: 'Existing User', schema: {message: 'Email address associated with an existing community member. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
+        return successResponse(
+          res,
+          200,
+          "Email address associated with an existing community member. Community Links have been sent to email address."
+        );
     }
 
     // Handle image upload
@@ -80,29 +89,38 @@ const create = async (req: Request, res: Response) => {
       },
     });
 
-    // Todo: Add email sending after successful registeration.
-    // Return User
-    /* 
-      #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}} 
-    */
-    return successResponse(
-      res,
-      201,
-      "Successful Registration. Community Links have been sent to email address.",
-      {
-        email: newUser.email,
-        firstName: newUser.first_name,
-        lastName: newUser.last_name,
-        subCommunity: newUser.sub_community,
-        uid: newUser.uid,
-        profilePic: profilePic_db?.image_url,
-      }
+    const response = await sendMail(
+      email,
+      "Welcome To BlockchainUNN",
+      "onboarding",
+      {}
     );
+    if (response.rejected.includes(email))
+      return errorResponse(
+        res,
+        403,
+        "Failed to deliver the email to the recipient. Please check the email address."
+      );
+
+    // Return User
+    if (response.accepted.includes(email))
+      // #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
+      return successResponse(
+        res,
+        201,
+        "Successful Registration. Community Links have been sent to email address.",
+        {
+          email: newUser.email,
+          firstName: newUser.first_name,
+          lastName: newUser.last_name,
+          subCommunity: newUser.sub_community,
+          uid: newUser.uid,
+          profilePic: profilePic_db?.image_url,
+        }
+      );
   } catch (error) {
     // Handle error
-    /* 
-      #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}} 
-    */
+    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
     return errorResponse(res, 500, "Internal Error", { details: error });
   }
 };
