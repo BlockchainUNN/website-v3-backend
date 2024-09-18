@@ -9,7 +9,7 @@ const doc = {
     title: "BlockchainUNN Website-v3 API",
     description: "API Documentation for BlockchainUNN website version 3",
   },
-  host: HOST,
+  host: process.env.EXTERNAL_HOST || HOST,
   // basePath: BASE_PATH,
   securityDefinitions: {
     apiKeyAuth: {
@@ -17,6 +17,16 @@ const doc = {
       in: "header", // can be 'header', 'query' or 'cookie'
       name: "Authorization", // name of the header, query parameter or cookie
       description: "Authorization: Bearer <token>",
+    },
+  },
+  components: {
+    securitySchemes: {
+      apiKeyAuth: {
+        type: "apiKey",
+        in: "header", // can be 'header', 'query' or 'cookie'
+        name: "Authorization", // name of the header, query parameter or cookie
+        description: "Authorization: Bearer <token>",
+      },
     },
   },
 };
