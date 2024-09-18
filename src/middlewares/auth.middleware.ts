@@ -28,6 +28,7 @@ const protectRoute = async (
     try {
       token = receivedToken.split(" ")[1]; // JWT
       // Check that the token is still valid
+      console.log(token)
       return jwt.verify(token, SECRET_KEY, function (err, decoded) {
         if (err) {
           throw err;
