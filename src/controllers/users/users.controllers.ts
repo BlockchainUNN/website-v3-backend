@@ -22,4 +22,34 @@ const getUsers = async (req: Request, res: Response) => {
 }
 
 
-export default {getUsers}
+const getUserDetails = async (req: Request, res: Response) => {
+    const {id} = req.params;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {id: parseInt(id)},
+        })
+
+        if (!user) {
+            return errorResponse(res, 404, "User not found");
+        }
+
+        return successResponse(
+            res,
+            200,
+            "User details retrieved succesfully",
+            user
+        )
+        
+    } catch (error) {
+        errorResponse(
+            res,
+            500,
+            "An Error occured fetching user details",
+            error
+        )
+        
+    }
+}
+
+
+export default {getUsers, getUserDetails}
