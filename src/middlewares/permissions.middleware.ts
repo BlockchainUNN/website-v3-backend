@@ -1,17 +1,18 @@
+// In permissions.middleware.ts
 import { NextFunction, Request, Response } from "express";
 import { errorResponse } from "../utils/responseHandlers";
 import { ROLES } from "../types/auth.types";
 import prisma from "../../prisma/client";
 
 /**
- * @description This middleware checks the request user for the users role
+ * @description This middleware checks the request user for the user's role
  * @required Authenticated User
  */
 export const permissionsCheck = ({
   role,
-  allowOwner,
+  allowOwner = false,
 }: {
-  role: ROLES;
+  role?: ROLES;
   allowOwner?: boolean;
 }) => {
   // Process the roles array
@@ -20,16 +21,18 @@ export const permissionsCheck = ({
       ? ["superadmin"]
       : role === "admin"
       ? ["admin", "superadmin"]
-      : ["admin", "superadmin", role];
+      : role
+      ? [role, "admin", "superadmin"]
+      : ["admin", "superadmin"];
 
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return errorResponse(res, 401, "User is unauthenticated.");
 
     try {
-      // If owner is allowed.
+      // If owner is allowed
       let owner;
       if (allowOwner && req.params.id) {
-        owner = await prisma.user.findUnique({ where: { uid: req.params.id } });
+        owner = await prisma.user.findUnique({ where: { id: parseInt(req.params.id) } });
         if (!owner) {
           console.log(`No owner found for id: ${req.params.id}`);
         }
@@ -37,7 +40,7 @@ export const permissionsCheck = ({
 
       if (
         roles.includes(req.user.role as ROLES) ||
-        owner?.email === req.user.email
+        (allowOwner && owner?.email === req.user.email)
       ) {
         console.log(`User authorized with role: ${req.user.role}`);
         return next();
