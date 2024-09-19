@@ -21,7 +21,14 @@ export const HOST = process.env.HOST || `127.0.0.1:${PORT}`;
 const EXTERNAL_HOST = process.env.EXTERNAL_HOST || HOST;
 
 // Running routes
-// app.use(cors());
+app.use(
+  cors({
+    origin: "blockchainunn-backend.onrender.com",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
+);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
