@@ -3,7 +3,7 @@ import { errorResponse } from "../utils/responseHandlers";
 import jwt from "jsonwebtoken";
 import { TokenUserType } from "../types/auth.types";
 
-const SECRET_KEY = process.env?.SECRET_KEY || "random_string";
+// const SECRET_KEY = process.env?.SECRET_KEY || "random_string";
 
 /**
  * @description This middleware checks the user token supplied as Bearer authorization
@@ -23,11 +23,13 @@ const protectRoute = async (
 ) => {
   let receivedToken = req.headers.authorization;
   let token;
-
+  const SECRET_KEY = process.env?.SECRET_KEY || "random_string";
   if (receivedToken && receivedToken.startsWith("Bearer")) {
     try {
       token = receivedToken.split(" ")[1]; // JWT
       // Check that the token is still valid
+      console.log(token)
+      console.log('key1', SECRET_KEY)
       return jwt.verify(token, SECRET_KEY, function (err, decoded) {
         if (err) {
           throw err;

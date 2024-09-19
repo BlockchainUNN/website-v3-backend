@@ -155,7 +155,7 @@ const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     // Handle error
-    return errorResponse(res, 500, "Internal Error");
+    return errorResponse(res, 500, "Internal Error", error);
   }
 };
 
