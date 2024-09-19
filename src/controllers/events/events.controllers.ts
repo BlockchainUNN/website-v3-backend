@@ -98,4 +98,40 @@ const getEventDetails = async (req: Request, res: Response) => {
     }
   };
 
-export default {getEvents, getEventDetails, createEvent}
+
+  const updateEvent = async (req: Request, res: Response) => {
+    const { id } = req.params;
+  
+    try {
+      const event = await prisma.event.findUnique({ where: { id: parseInt(id) } });
+      if (!event) {
+        return errorResponse(res, 404, "Event not found.");
+      }
+  
+      // Get updated data from the request body
+      const { name, description, start_date, end_date, location, max_attendees } = req.body;
+  
+      // Handle optional file upload (if cover_image is provided)
+      const cover_image = req.file ? req.file.path : event.cover_image;
+  
+      // Update the event
+      const updatedEvent = await prisma.event.update({
+        where: { id: parseInt(id) },
+        data: {
+          name: name || event.name,
+          description: description || event.description,
+          start_date: start_date ? new Date(start_date) : event.start_date,
+          end_date: end_date ? new Date(end_date) : event.end_date,
+          location: location || event.location,
+          max_attendees: max_attendees || event.max_attendees,
+          cover_image,
+        },
+      });
+  
+      return successResponse(res, 200, "Event updated successfully.", updatedEvent);
+    } catch (error) {
+      return errorResponse(res, 500, "Failed to update event.", error);
+    }
+  }
+
+export default {getEvents, getEventDetails, createEvent, updateEvent}
