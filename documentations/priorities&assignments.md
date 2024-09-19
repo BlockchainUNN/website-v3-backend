@@ -179,33 +179,10 @@
 
 ### 3. Odoi
 
-- [ ] **Get Users**
 
-  - **Method:** GET
-  - **Path:** `/users/`
-  - **Description:** Retrieve a list of users.
-  - **Role:** Admin
 
-- [ ] **Get User Details**
 
-  - **Method:** GET
-  - **Path:** `/users/{id}/`
-  - **Description:** Retrieve details of a specific user.
-  - **Role:** Admin or the User themselves
 
-- [ ] **Get Events**
-
-  - **Method:** GET
-  - **Path:** `/events/`
-  - **Description:** Retrieve a list of events.
-  - **Role:** Public
-
-- [ ] **Get Event Details**
-
-  - **Method:** GET
-  - **Path:** `/events/{id}/`
-  - **Description:** Retrieve details of a specific event, and it's cohosts.
-  - **Role:** Public
 
 - [ ] **Register for an Event**
 
@@ -219,4 +196,39 @@
   - **Method:** POST
   - **Path:** `/events/unregister/{id}/`
   - **Description:** Unregister for a specific event.
+  - **Role:** Public
+
+
+completed endpoints - odoi
+
+- [ ] **Get Users**
+
+  - **Method:** GET
+  - **Path:** `/users/`
+  - **Description:** Retrieve a list of users.
+  - **Role:** Admin
+
+
+
+- [ ] **Get User Details**
+
+  - **Method:** GET
+  - **Path:** `/users/{id}/`
+  - **Description:** Retrieve details of a specific user.
+  - **Role:** Admin or the User themselves
+
+
+- [ ] **Get Events**
+
+  - **Method:** GET
+  - **Path:** `/events/`
+  - **Description:** Retrieve a list of events.
+  - **Role:** Public
+
+
+- [ ] **Get Event Details**
+
+  - **Method:** GET
+  - **Path:** `/events/{id}/`
+  - **Description:** Retrieve details of a specific event, and it's cohosts.
   - **Role:** Public
