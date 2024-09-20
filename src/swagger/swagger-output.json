@@ -944,6 +944,77 @@
         }
       }
     },
+    "/api/v3/event/cohosts": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "event_id": {
+                  "example": "any"
+                },
+                "name": {
+                  "example": "any"
+                },
+                "role_skill": {
+                  "example": "any"
+                },
+                "x_url": {
+                  "example": "any"
+                },
+                "linkedin_url": {
+                  "example": "any"
+                },
+                "instagram_url": {
+                  "example": "any"
+                },
+                "facebook_url": {
+                  "example": "any"
+                },
+                "discord_url": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "You are not authorized to use this service."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v3/roles/": {
       "post": {
         "tags": [
