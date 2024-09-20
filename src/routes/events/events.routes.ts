@@ -25,4 +25,11 @@ getEventsRoutes.put(
   eventsControllers.updateEvent
 );
 
+getEventsRoutes.delete(
+  "/events/:id", 
+  AuthMiddleware.protectRoute,  // Ensure the user is authenticated
+  permissionsCheck({ role: ["admin", "event_admin", "superadmin"] }),  // Restrict access to admin or event_admin
+  eventsControllers.deleteEvent  // Controller to handle the deletion
+);
+
 export default getEventsRoutes;

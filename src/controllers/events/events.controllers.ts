@@ -134,4 +134,32 @@ const getEventDetails = async (req: Request, res: Response) => {
     }
   }
 
-export default {getEvents, getEventDetails, createEvent, updateEvent}
+  const deleteEvent = async  (req: Request, res: Response) => {
+    const eventId = parseInt(req.params.id);  // Get the event ID from the request parameters
+
+    try {
+      // Find the event by ID
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+      });
+
+      // If event doesn't exist, return error
+      if (!event) {
+        return errorResponse(res, 404, "Event not found");
+      }
+
+      // Delete the event
+      await prisma.event.delete({
+        where: { id: eventId },
+      });
+
+      // Return a success response
+      return successResponse(res, 200, "Event deleted successfully");
+    } catch (error) {
+      console.error("Error deleting event: ", error);
+      return errorResponse(res, 500, "Something went wrong while deleting the event", error);
+    }
+  }
+;
+
+export default {getEvents, getEventDetails, createEvent, updateEvent, deleteEvent}
