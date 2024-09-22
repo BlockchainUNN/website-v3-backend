@@ -9,3 +9,7 @@ export function isValidEmailAddress(email: string) {
 export function isValidRole(role: string) {
   return true;
 }
+
+export function isValidPhoneNumber(number: string) {
+  return true;
+}

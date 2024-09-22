@@ -386,10 +386,20 @@
             "type": "string"
           },
           {
-            "name": "subCommunity",
+            "name": "techSkills",
             "in": "formData",
             "required": true,
-            "description": "Comma Seperated list of subCommunities (developer, design or content) user is intrested in.",
+            "description": "Comma Seperated list of skills user is intrested in.",
+            "type": "string"
+          },
+          {
+            "name": "phoneNumber",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "gender",
+            "in": "formData",
             "type": "string"
           },
           {
@@ -412,7 +422,13 @@
                 "lastName": {
                   "example": "any"
                 },
-                "subCommunity": {
+                "techSkills": {
+                  "example": "any"
+                },
+                "phoneNumber": {
+                  "example": "any"
+                },
+                "gender": {
                   "example": "any"
                 }
               }
@@ -576,46 +592,20 @@
         }
       }
     },
-    "/api/v3/users/{id}": {
+    "/api/v3/users/{email}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "id",
+            "name": "email",
             "in": "path",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
             "type": "string"
           }
         ],
         "responses": {
-          "401": {
-            "description": "Unauthorized",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "example": "You are not authorized to use this service."
-                },
-                "data": {
-                  "type": "object",
-                  "properties": {
-                    "details": {
-                      "type": "string",
-                      "example": "If more info is available it will be here."
-                    }
-                  }
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
+          "default": {
+            "description": ""
           }
         }
       }
@@ -639,6 +629,7 @@
             "name": "body",
             "in": "body",
             "required": true,
+            "description": "Takes email, and any other details you send in will be saved as well in a json field",
             "schema": {
               "type": "object",
               "properties": {

@@ -21,14 +21,29 @@ export const HOST = process.env.HOST || `127.0.0.1:${PORT}`;
 const EXTERNAL_HOST = process.env.EXTERNAL_HOST || HOST;
 
 // Running routes
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5555",
+  "https://blockchainunn-frontend.onrender.com",
+];
 app.use(
   cors({
-    origin: "blockchainunn-backend.onrender.com",
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
   })
 );
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 

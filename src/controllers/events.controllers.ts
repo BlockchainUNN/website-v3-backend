@@ -9,7 +9,7 @@ const register = async (req: Request, res: Response) => {
   // #swagger.summary = "Endpoint for registering for an event"
   try {
     // #swagger.parameters['id'] = {description: "Id of the event User is regiatering for", required: 'true'}
-    // #swagger.parameters['body'] = { in: 'body', required: 'true', schema: {email: "jondoe@example.com"}}
+    // #swagger.parameters['body'] = { in: 'body', required: 'true', description: "Takes email, and any other details you send in will be saved as well in a json field", schema: {email: "jondoe@example.com"}}
     const { email } = req.body;
     const eventId = req.params?.id;
 
@@ -25,7 +25,7 @@ const register = async (req: Request, res: Response) => {
     // Check if user with email exists
     const existingUser = await prisma.user.findUnique({
       where: { email: email },
-      include: { event: true },
+      include: { eventAttendee: true },
     });
 
     if (!existingUser) {
@@ -38,12 +38,14 @@ const register = async (req: Request, res: Response) => {
     }
 
     // Check if user has registered for event already
-    const eventsRegistered = existingUser.event.map((event) => event.uid);
-    if (eventsRegistered.includes(event.uid))
+    const eventsRegistered = existingUser.eventAttendee.map((eventAttendee) => {
+      return eventAttendee.event_id;
+    });
+    if (eventsRegistered.includes(event.id))
       return errorResponse(
         res,
         400,
-        "User is already registered for this event"
+        "You are already registered for this event"
       );
 
     // Register user as an attendee for the event
@@ -51,6 +53,7 @@ const register = async (req: Request, res: Response) => {
       data: {
         attendee_id: existingUser.id,
         event_id: event.id,
+        registrationDetails: req.body,
       },
       include: { event: true },
     });

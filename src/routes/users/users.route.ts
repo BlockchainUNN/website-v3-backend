@@ -11,12 +11,6 @@ getUserRoutes.get(
   permissionsCheck({ role: "admin" }),
   usersControllers.getUsers
 );
-
-getUserRoutes.get(
-  "/users/:id",
-  AuthMiddleware.protectRoute,
-  permissionsCheck({ allowOwner: true }), // Allow access for users and admins
-  usersControllers.getUserDetails
-);
+getUserRoutes.get("/users/:email", usersControllers.getUserDetails);
 
 export default getUserRoutes;

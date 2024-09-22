@@ -30,6 +30,9 @@ model User {
   hashed_password String?
   roles           Role?           @relation(fields: [roleId], references: [id])
   sub_community   Json?
+  tech_skills     Json?
+  phone_number    String?
+  gender          String?
   profile_pic     Int?
   created_at      DateTime        @default(now())
   updated_at      DateTime        @updatedAt
@@ -150,12 +153,12 @@ model HackathonSchedule {
 }
 
 model Hacker {
-  id              Int      @id @default(autoincrement())
-  user_id         Int      @unique
-  team_id         Int?
-  registered_at   DateTime @default(now())
-  user            User     @relation(fields: [user_id], references: [id])
-  team            Team?    @relation(fields: [team_id], references: [id])
+  id            Int      @id @default(autoincrement())
+  user_id       Int      @unique
+  team_id       Int?
+  registered_at DateTime @default(now())
+  user          User     @relation(fields: [user_id], references: [id])
+  team          Team?    @relation(fields: [team_id], references: [id])
 }
 
 // hacker team join table
@@ -208,9 +211,10 @@ model EventGallery {
 }
 
 model EventAttendee {
-  id          Int   @id @default(autoincrement())
-  attendee_id Int
-  event_id    Int
-  user        User  @relation(fields: [attendee_id], references: [id])
-  event       Event @relation(fields: [event_id], references: [id])
+  id                  Int   @id @default(autoincrement())
+  registrationDetails Json?
+  attendee_id         Int
+  event_id            Int
+  user                User  @relation(fields: [attendee_id], references: [id])
+  event               Event @relation(fields: [event_id], references: [id])
 }

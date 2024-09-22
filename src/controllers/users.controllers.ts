@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../utils/responseHandlers";
-import { isValidEmailAddress } from "../utils/validationHandlers";
+import {
+  isValidEmailAddress,
+  isValidPhoneNumber,
+} from "../utils/validationHandlers";
 import { uploadSingleImage } from "../utils/imageUploadHandler";
 import { FileType } from "../types/files.types";
 import prisma from "../../prisma/client";
@@ -15,10 +18,13 @@ const create = async (req: Request, res: Response) => {
         #swagger.parameters['email'] = { in: 'formData', required: 'true'} 
         #swagger.parameters['firstName'] = { in: 'formData', required: 'true'} 
         #swagger.parameters['lastName'] = { in: 'formData', required: 'true'} 
-        #swagger.parameters['subCommunity'] = { in: 'formData', required: 'true', description: 'Comma Seperated list of subCommunities (developer, design or content) user is intrested in.'} 
+        #swagger.parameters['techSkills'] = { in: 'formData', required: 'true', description: 'Comma Seperated list of skills user is intrested in.'} 
+        #swagger.parameters['phoneNumber'] = { in: 'formData'} 
+        #swagger.parameters['gender'] = { in: 'formData'} 
         #swagger.parameters['profilePic'] = { in: 'formData', type: 'file'} 
     */
-    const { email, firstName, lastName, subCommunity } = req.body;
+    let { email, firstName, lastName, techSkills, phoneNumber, gender } =
+      req.body;
     const profilePic: FileType | undefined = req.file;
     let profilePic_db, uploadedImage: { url: string; public_id: string };
 
@@ -31,16 +37,33 @@ const create = async (req: Request, res: Response) => {
        */
       return errorResponse(res, 400, "Invalid email address");
 
-    const subCommunities = String(subCommunity).split(",");
-    for (let index = 0; index < subCommunities.length; index++) {
-      const item: string = subCommunities[index];
-      if (item !== "developer" && item !== "design" && item !== "content")
-        return errorResponse(
-          res,
-          400,
-          `${item} is not a valid sub community. Options are developer, design and content `
-        );
+    if (phoneNumber && !isValidPhoneNumber(phoneNumber))
+      return errorResponse(res, 400, "Invalid phone number");
+    if (gender.toLowerCase() === "male") {
+      gender = "male";
+    } else if (gender.toLowerCase() === "female") {
+      gender = "female";
+    } else {
+      gender = null;
     }
+
+    // Mapping tech skills to comunities
+    const techSkillsArr = String(techSkills).toLowerCase().split(",");
+    let subCommunities: string[] = [];
+    if (techSkillsArr.includes("programming"))
+      subCommunities = [...subCommunities, "developer"];
+    if (
+      techSkillsArr.includes("designing") ||
+      techSkills.includes("product management")
+    )
+      subCommunities = [...subCommunities, "design"];
+    if (
+      techSkillsArr.includes("copywriting") ||
+      techSkillsArr.includes("marketing") ||
+      techSkillsArr.includes("community management") ||
+      techSkills.includes("product management")
+    )
+      subCommunities = [...subCommunities, "content"];
 
     // Check if user with email exists
     const existingUser = await prisma.user.findUnique({
@@ -85,6 +108,9 @@ const create = async (req: Request, res: Response) => {
         first_name: firstName,
         last_name: lastName,
         sub_community: subCommunities,
+        tech_skills: techSkillsArr,
+        phone_number: phoneNumber,
+        gender: gender,
         profile_pic: profilePic_db?.id,
       },
     });
@@ -114,6 +140,9 @@ const create = async (req: Request, res: Response) => {
           firstName: newUser.first_name,
           lastName: newUser.last_name,
           subCommunity: newUser.sub_community,
+          techSkills: newUser.tech_skills,
+          phoneNumber,
+          gender,
           uid: newUser.uid,
           profilePic: profilePic_db?.image_url,
         }
