@@ -753,6 +753,72 @@
             "description": ""
           }
         }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "description": {
+                  "example": "any"
+                },
+                "start_date": {
+                  "example": "any"
+                },
+                "end_date": {
+                  "example": "any"
+                },
+                "location": {
+                  "example": "any"
+                },
+                "host_id": {
+                  "example": "any"
+                },
+                "max_attendees": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "You are not authorized to use this service."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
       }
     },
     "/api/v3/events/{id}": {
@@ -769,6 +835,102 @@
         "responses": {
           "default": {
             "description": ""
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "where": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "You are not authorized to use this service."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "You are not authorized to use this service."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }

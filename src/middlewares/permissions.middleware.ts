@@ -12,18 +12,19 @@ export const permissionsCheck = ({
   role,
   allowOwner = false,
 }: {
-  role?: ROLES;
+  role?: ROLES | ROLES[]; // Now supports both single role and array of roles
   allowOwner?: boolean;
 }) => {
   // Process the roles array
-  const roles: ROLES[] =
-    role === "superadmin"
-      ? ["superadmin"]
-      : role === "admin"
-      ? ["admin", "superadmin"]
-      : role
-      ? [role, "admin", "superadmin"]
-      : ["admin", "superadmin"];
+  const roles: ROLES[] = Array.isArray(role)
+    ? role // If role is an array, use it directly
+    : role === "superadmin"
+    ? ["superadmin"]
+    : role === "admin"
+    ? ["admin", "superadmin"]
+    : role
+    ? [role, "admin", "superadmin"]
+    : ["admin", "superadmin"];
 
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return errorResponse(res, 401, "User is unauthenticated.");
@@ -39,7 +40,7 @@ export const permissionsCheck = ({
       }
 
       if (
-        roles.includes(req.user.role as ROLES) ||
+        roles.includes(req.user.role as ROLES) || // Check if user's role is in the allowed roles
         (allowOwner && owner?.email === req.user.email)
       ) {
         console.log(`User authorized with role: ${req.user.role}`);
