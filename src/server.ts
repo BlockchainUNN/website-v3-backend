@@ -7,12 +7,12 @@ import authRoutes from "./routes/auth.routes";
 import AuthMiddleware from "./middlewares/auth.middleware";
 import { readFileSync } from "fs";
 import adminAuthRoutes from "./routes/admin/auth.routes";
-import userRoutes from "./routes/users.routes";
 import roleRoutes from "./routes/admin/roles.routes";
 import { permissionsCheck } from "./middlewares/permissions.middleware";
 import eventsRoutes from "./routes/events.routes";
-import getUserRoutes from "./routes/users/users.route";
+import userRoutes from "./routes/users/users.routes";
 import getEventsRoutes from "./routes/events/events.routes";
+import hackersRoutes from "./routes/hackathons/hackers.routes";
 
 dotenv.config();
 const app = express();
@@ -24,6 +24,7 @@ const EXTERNAL_HOST = process.env.EXTERNAL_HOST || HOST;
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5555",
+  "http://127.0.0.1:8000",
   "https://blockchainunn-frontend.onrender.com",
 ];
 app.use(
@@ -63,9 +64,9 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/api/v3/", authRoutes);
 app.use("/api/v3/", adminAuthRoutes);
 app.use("/api/v3/", userRoutes);
-app.use("/api/v3/", getUserRoutes);
 app.use("/api/v3/", eventsRoutes);
 app.use("/api/v3/", getEventsRoutes);
+app.use("/api/v3/", hackersRoutes);
 
 // PROTECTED ROUTES BELOW HERE
 app.use(AuthMiddleware.protectRoute);

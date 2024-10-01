@@ -87,7 +87,7 @@ model Image {
 // Todo: Add tags (upcoming, past e.t.c)
 model Event {
   id              Int             @id @default(autoincrement())
-  uid             String          @unique @default(uuid())
+  uid             String          @unique
   name            String
   cover_image     String
   description     String
@@ -120,7 +120,7 @@ model EventCohost {
 
 model Hackathon {
   id                    Int                 @id @default(autoincrement())
-  uid                   String              @unique @default(uuid())
+  unique_name           String              @unique
   name                  String
   description           String
   start_date            DateTime
@@ -132,6 +132,8 @@ model Hackathon {
   schedule              HackathonSchedule[]
   submissions           Submission[]
   teams                 Team[]
+
+  hackers Hacker[]
 }
 
 model HackathonCategory {
@@ -153,12 +155,16 @@ model HackathonSchedule {
 }
 
 model Hacker {
-  id            Int      @id @default(autoincrement())
-  user_id       Int      @unique
+  id            Int       @id @default(autoincrement())
+  user_id       Int       @unique
+  role          String?
+  passwordHash  String?
+  hackathon_id  Int
   team_id       Int?
-  registered_at DateTime @default(now())
-  user          User     @relation(fields: [user_id], references: [id])
-  team          Team?    @relation(fields: [team_id], references: [id])
+  registered_at DateTime  @default(now())
+  user          User      @relation(fields: [user_id], references: [id])
+  hackathon     Hackathon @relation(fields: [hackathon_id], references: [id])
+  team          Team?     @relation(fields: [team_id], references: [id])
 }
 
 // hacker team join table

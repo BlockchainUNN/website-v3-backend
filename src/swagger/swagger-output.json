@@ -556,6 +556,10 @@
     },
     "/api/v3/users": {
       "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Endpoint for getting list of users",
         "description": "",
         "parameters": [
           {
@@ -565,6 +569,30 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "Get list of users",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "user retrived successfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
           "401": {
             "description": "Unauthorized",
             "schema": {
@@ -588,12 +616,45 @@
                 "name": "main"
               }
             }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
       }
     },
     "/api/v3/users/{email}": {
       "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User details",
         "description": "",
         "parameters": [
           {
@@ -604,8 +665,77 @@
           }
         ],
         "responses": {
-          "default": {
-            "description": ""
+          "200": {
+            "description": "User details retrieved succesfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User details retrieved succesfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "User not found"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
         }
       }
@@ -745,6 +875,103 @@
         }
       }
     },
+    "/api/v3/events/attendees/{id}": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Endpoint for checking if someone is registered for a specific event",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id of the event we are checking"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Users email address",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "jondoe@example.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved succesfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": ""
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Missing or invalid data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Invalid email address"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v3/events": {
       "get": {
         "description": "",
@@ -769,6 +996,9 @@
               "type": "object",
               "properties": {
                 "name": {
+                  "example": "any"
+                },
+                "unique_name": {
                   "example": "any"
                 },
                 "description": {
@@ -925,6 +1155,111 @@
                       "example": "If more info is available it will be here."
                     }
                   }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/hackers/{id}": {
+      "post": {
+        "tags": [
+          "Hackers"
+        ],
+        "summary": "Endpoint for creating a hacker",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id of the hackathon User is regiatering for"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "description": "Hackers details",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "jondoe@example.com"
+                },
+                "role": {
+                  "type": "string",
+                  "example": "frontend developer"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "strong password"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Hacker account successfully  ",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Successful Registration."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Missing or invalid data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Invalid email address"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
                 }
               },
               "xml": {
