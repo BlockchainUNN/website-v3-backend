@@ -1270,6 +1270,235 @@
         }
       }
     },
+    "/api/v3/hackers/{id}/{email}": {
+      "get": {
+        "tags": [
+          "Hacker"
+        ],
+        "summary": "Endpoint for getting a hacker account",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The Unique id/name of the hackathon"
+          },
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Hackers email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Request Successfully"
+                },
+                "data": {
+                  "type": "string",
+                  "example": "Any extra details."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Missing or invalid credentials",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "You need to provide a valid email address"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/hackers/login/{id}": {
+      "post": {
+        "tags": [
+          "Hacker"
+        ],
+        "summary": "Endpoint for signing into a hacker account",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The Unique id/name of the hackathon"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Log In",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "jonDoe@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "P@ssword123"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Request Successfully"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "tokens": {
+                      "type": "object",
+                      "properties": {
+                        "access": {
+                          "type": "string",
+                          "example": "access token..."
+                        },
+                        "refresh": {
+                          "type": "string",
+                          "example": "refresh token..."
+                        }
+                      }
+                    },
+                    "userDetails": {
+                      "type": "object",
+                      "properties": {
+                        "firstName": {
+                          "type": "string",
+                          "example": "Jon"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "example": "Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "jonDoe@example.com"
+                        },
+                        "uid": {
+                          "type": "string",
+                          "example": "uid here..."
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "hacker"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Missing or invalid credentials",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "You need to provide a valid email address"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Wrong Password"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong server side",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal Server Error"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v3/roles/": {
       "post": {
         "tags": [
