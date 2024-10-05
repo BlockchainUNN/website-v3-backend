@@ -1,43 +1,42 @@
+
 doctype html
 html(lang="en")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title Event Registration
-    link(rel="stylesheet", href="/css/styles.css")
+head
+meta(charset="UTF-8")
+meta(name="viewport" content="width=device-width, initial-scale=1.0")
+title BlockchainUNN 3.0 Conference Registration Confirmation & Hackathon Invitation
+link(rel="stylesheet", href="/css/styles.css")
 
-  body
-    header
-      h1 Register for Our Upcoming Event!
-      p Join us for an exciting event where you can network, learn, and grow.
-      img(src="https://res.cloudinary.com/df4c9rdyq/image/upload/v1726643326/bunn/Screenshot%202023-06-18%20210554-1726643322740.png" alt="Event Banner" width="600")
-
-    section.event-details
-      h2 Event Details
-      p Name: Tech Conference 2024
-      p Date: November 5th, 2024
-      p Location: Virtual (Zoom)
-      p Time: 9 AM - 5 PM
-      img(src="https://res.cloudinary.com/df4c9rdyq/image/upload/v1726195801/bunn/bg2-1726195799058.jpg" alt="Event Location" width="400")
-
-    section.registration-form
-      h2 Register Now
-
-      form(action="/register-event" method="POST")
-        label(for="name") Full Name
-        input#name(type="text" name="name" placeholder="Enter your full name" required)
-
-        label(for="email") Email
-        input#email(type="email" name="email" placeholder="Enter your email" required)
-
-        label(for="company") Company (optional)
-        input#company(type="text" name="company" placeholder="Enter your company")
-
-        label(for="skills") Skills/Interests (optional)
-        textarea#skills(name="skills" placeholder="Tell us about your skills or interests")
-
-        button(type="submit") Register
-
-    footer
-      p Questions? Contact us at 
-      a(href="mailto:support@example.com") support@example.com
+body
+.container
+p Hi #[strong #{firstName}],
+p
+  | Welcome to #[strong BlockchainUNN 3.0]! You’ve successfully
+  | registered for the conference, and we’re thrilled to have you with us.
+a(href="https://blockchainunn-frontend.onrender.com/blockathon/hackathon/registration") Click this link 
+  | to join our WhatsApp group to network with other attendees and get first-hand updates about the event.
+p
+  | But it doesn’t end there. As part of this exciting week-long event,
+  | we’re also hosting a #[strong 5-day hackathon], where you’ll get
+  | to put your skills to the test and build innovative blockchain projects
+  | and solutions with like-minded friends.
+p #[strong Here’s your next step:]
+p
+  | To participate in the hackathon, make sure you complete your
+  | registration by following the link below:
+span.flex-box
+  p.mx-auto
+    a.link(href="https://blockchainunn-frontend.onrender.com/blockathon/hackathon/registration") 👉 Register for the Hackathon
+p
+  | This is your chance to team up with fellow blockchain enthusiasts,
+  | tackle real-world problems, and showcase your creativity and technical
+  | expertise.
+p
+  | Don’t wait—spaces for the hackathon are limited. Get registered now, and
+  | we’ll see you on the leaderboards!
+p
+  | Best regards,
+  br 
+  | The BlockchainUNN Team
+.footer
+  p © 2024 BlockchainUNN. All Rights Reserved.

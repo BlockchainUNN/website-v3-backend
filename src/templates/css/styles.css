@@ -1,121 +1,48 @@
-/* General Styles */
 body {
-  font-family: "Courier New", Courier, monospace;
-  background-color: #1e1e1e;
-  color: #00ffcc;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
   margin: 0;
-  padding: 20px;
-  line-height: 1.6;
+  padding: 0;
 }
-
-a {
-  color: #ff00ff;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-a:hover {
-  color: #00ff00;
-}
-
-h1,
-h2 {
-  font-family: "Lucida Console", Monaco, monospace;
-  color: #00ffcc;
-  text-shadow: 2px 2px 0 #ff00ff;
-}
-
-p {
-  margin: 10px 0;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-/* Form Styles */
-form {
-  background-color: #333;
+.container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #ffffff;
   padding: 20px;
   border-radius: 10px;
-  border: 2px solid #00ffcc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
-label {
-  font-family: "Lucida Console", Monaco, monospace;
-  color: #00ffcc;
-  display: block;
-  margin-bottom: 10px;
+h1 {
+  color: #02641c;
 }
-
-input,
-textarea {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 2px solid #00ffcc;
-  border-radius: 5px;
-  background-color: #1e1e1e;
-  color: #00ffcc;
-  font-family: "Courier New", Courier, monospace;
+p {
+  line-height: 1.6;
 }
-
-button {
-  background-color: #ff00ff;
-  color: #fff;
+.link {
+  display: inline-block;
+  background-color: #02641c;
+  color: white;
   padding: 10px 20px;
-  border: none;
+  text-decoration: none;
   border-radius: 5px;
-  font-family: "Lucida Console", Monaco, monospace;
-  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
 }
-
-button:hover {
-  background-color: #00ff00;
+.link:hover {
+  background-color: #02641c;
 }
-
-/* Event Details Section */
-section.event-details {
-  margin-bottom: 30px;
-  border-left: 5px solid #ff00ff;
-  padding-left: 20px;
-}
-
-/* Sub-Community Links */
-ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-
-li {
-  margin-bottom: 20px;
-}
-
-li a {
-  display: block;
-  background-color: #333;
-  padding: 10px;
-  border-radius: 5px;
-  border: 2px solid #00ffcc;
+.footer {
+  margin-top: 20px;
   text-align: center;
+  color: #777;
 }
-
-li a:hover {
-  background-color: #00ff00;
-  color: #000;
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
 }
-
-/* Footer */
-footer {
-  text-align: center;
-  margin-top: 40px;
-}
-
-footer a {
-  color: #00ffcc;
-}
-
-footer a:hover {
-  color: #ff00ff;
+.flex-box {
+  display: flex;
+  width: 100%;
 }

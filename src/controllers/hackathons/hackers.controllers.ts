@@ -3,6 +3,8 @@ import { errorResponse, successResponse } from "../../utils/responseHandlers";
 import { isValidEmailAddress } from "../../utils/validationHandlers";
 import { Request, Response } from "express";
 import bycrypt from "bcrypt";
+import { sendMail } from "../../utils/mailHandler";
+import { createAuthTokens } from "../../utils/tokenHandlers";
 
 const create = async (req: Request, res: Response) => {
   // #swagger.tags = ['Hackers']
@@ -72,6 +74,14 @@ const create = async (req: Request, res: Response) => {
               );
             }
 
+            // Send mail
+            sendMail(
+              email,
+              `${newHacker.user.first_name} You’re Ready for the Hackathon!`,
+              "hackathon_registeration",
+              { firstName: newHacker.user.first_name }
+            );
+
             // #swagger.responses[201] = {description: 'Hacker account successfully created', schema: {message: 'Successful Registration.', data: {details: "If more info is available it will be here."}}}
             return successResponse(res, 201, "Successful Registration.", {
               role: newHacker.role,
@@ -100,5 +110,276 @@ const create = async (req: Request, res: Response) => {
   }
 };
 
-const hackers = { create };
+const login = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Hackers']
+  // #swagger.summary = 'Endpoint for signing into a hacker account'
+
+  try {
+    /*  #swagger.parameters['body'] = {
+              in: 'body',
+              description: 'Log In',
+              schema: { email: "jonDoe@example.com", password: "P@ssword123" }
+      } */
+    //  #swagger.parameters["id"] = {in: "path", description: "The Unique id/name of the hackathon"}
+    const { email, password } = req.body;
+    const hackathonUid = req.params?.id;
+
+    // Data Validations
+    if (!email || !isValidEmailAddress(email))
+      /* #swagger.responses[400] = {
+              description: 'Bad request - Missing or invalid credentials',
+              schema: {
+                  error: 'You need to provide a valid email address',
+                  data: {details: "If more info is available it will be here."}
+              }
+          } 
+       */
+      return errorResponse(
+        res,
+        400,
+        "You need to provide a valid email address"
+      );
+
+    // Get hackathon
+    const hackathon = await prisma.hackathon.findUnique({
+      where: { unique_name: hackathonUid },
+    });
+    if (!hackathon)
+      return errorResponse(res, 404, "Path does not exist.", {
+        details: "Wrong hackathon unique Id/name.",
+      });
+
+    // Get User
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user)
+      return errorResponse(res, 400, "Hacker with email does not exist.");
+
+    // Check that hacker exists
+    const existingHacker = await prisma.hacker.findUnique({
+      where: { hackathon_id: hackathon.id, user_id: user?.id },
+    });
+    if (!existingHacker) {
+      return errorResponse(res, 400, "Hacker with email does not exists");
+    }
+
+    // Confirm password
+    bycrypt.compare(
+      password,
+      existingHacker.passwordHash || "",
+      (err, result) => {
+        if (err)
+          /* #swagger.responses[500] = {
+              description: 'Something went wrong server side',
+              schema: {
+                  error: 'Internal Server Error',
+                  data: {details: "If more info is available it will be here."}
+              }
+           }
+          */
+          return errorResponse(res, 500, "Internal Server Error", {
+            details: "Error comparing passwords",
+          });
+
+        if (!result)
+          /* #swagger.responses[404] = {
+              description: 'Unauthorized',
+              schema: {
+                  error: 'Wrong Password',
+              }
+           }
+          */
+          return errorResponse(res, 404, "Wrong Password");
+
+        const { access, refresh } = createAuthTokens({
+          firstName: user.first_name,
+          lastName: user.last_name,
+          email: user.email,
+          role: "hacker",
+        });
+        /* #swagger.responses[200] = {
+        description: 'Successful Request',
+        schema: {
+            message: 'Request Successfully',
+            data: {
+                tokens: {
+                    access: "access token...",
+                    refresh: "refresh token...",
+                },
+                userDetails: {
+                    firstName: "Jon",
+                    lastName: "Doe",
+                    email: "jonDoe@example.com",
+                    uid: "uid here...",
+                    role: "hacker"},
+                }
+            }
+        }
+      } 
+      */
+        return successResponse(res, 200, "Request Successfully", {
+          tokens: {
+            access,
+            refresh,
+          },
+          userDetails: {
+            firstName: user.first_name,
+            lastName: user.last_name,
+            email: user.email,
+            uid: user.uid,
+            role: existingHacker.role,
+            registeredOn: existingHacker.registered_at,
+          },
+        });
+      }
+    );
+  } catch (error) {
+    // Handle error
+    return errorResponse(res, 500, "Internal Error", error);
+  }
+};
+
+const getHacker = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Hackers']
+  // #swagger.summary = 'Endpoint for getting a hacker account'
+
+  try {
+    //  #swagger.parameters["id"] = {in: "path", description: "The Unique id/name of the hackathon"}
+    //  #swagger.parameters["email"] = {in: "path", description: "Hackers email"}
+    const hackathonUid = req.params?.id;
+    const email = req.params?.email;
+    console.table({ hackathonUid, email });
+
+    // Data Validations
+    if (!email || !isValidEmailAddress(email))
+      /* #swagger.responses[400] = {
+              description: 'Bad request - Missing or invalid credentials',
+              schema: {
+                  error: 'You need to provide a valid email address',
+                  data: {details: "If more info is available it will be here."}
+              }
+          } 
+       */
+      return errorResponse(
+        res,
+        400,
+        "You need to provide a valid email address"
+      );
+
+    // Get hackathon
+    const hackathon = await prisma.hackathon.findUnique({
+      where: { unique_name: hackathonUid },
+    });
+    if (!hackathon)
+      return errorResponse(res, 404, "Path does not exist.", {
+        details: "Wrong hackathon unique Id/name.",
+      });
+
+    // Get User
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user)
+      return errorResponse(res, 400, "Hacker with email does not exist.");
+
+    // Check that hacker exists
+    const existingHacker = await prisma.hacker.findUnique({
+      where: { hackathon_id: hackathon.id, user_id: user?.id },
+    });
+    if (!existingHacker) {
+      return errorResponse(res, 400, "Hacker with email does not exists");
+    }
+
+    /* #swagger.responses[200] = {
+        description: 'Successful Request',
+        schema: {
+            message: 'Request Successfully',
+            data: "Any extra details."
+  } }
+      */
+    return successResponse(res, 200, "Request Successfully", {
+      hackerDetails: {
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        uid: user.uid,
+        role: existingHacker.role,
+        registeredOn: existingHacker.registered_at,
+      },
+    });
+  } catch (error) {
+    // Handle error
+    return errorResponse(res, 500, "Internal Error", error);
+  }
+};
+
+const getLoggedInHacker = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Hackers']
+  // #swagger.summary = 'Endpoint for getting a hacker account of a logged in user'
+
+  try {
+    //  #swagger.parameters["id"] = {in: "path", description: "The Unique id/name of the hackathon"}
+    const hackathonUid = req.params?.id;
+    const email = req.user?.email;
+    console.table({ hackathonUid, email });
+
+    // Data Validations
+    if (!email || !isValidEmailAddress(email))
+      /* #swagger.responses[400] = {
+              description: 'Bad request - Missing or invalid credentials',
+              schema: {
+                  error: 'You need to provide a valid email address',
+                  data: {details: "If more info is available it will be here."}
+              }
+          } 
+       */
+      return errorResponse(
+        res,
+        400,
+        "You need to provide a valid email address"
+      );
+
+    // Get hackathon
+    const hackathon = await prisma.hackathon.findUnique({
+      where: { unique_name: hackathonUid },
+    });
+    if (!hackathon)
+      return errorResponse(res, 404, "Path does not exist.", {
+        details: "Wrong hackathon unique Id/name.",
+      });
+
+    // Get User
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user)
+      return errorResponse(res, 400, "Hacker with email does not exist.");
+
+    // Check that hacker exists
+    const existingHacker = await prisma.hacker.findUnique({
+      where: { hackathon_id: hackathon.id, user_id: user?.id },
+    });
+    if (!existingHacker) {
+      return errorResponse(res, 400, "Hacker with email does not exists");
+    }
+
+    /* #swagger.responses[200] = {
+        description: 'Successful Request',
+        schema: {
+            message: 'Request Successfully',
+            data: "Any extra details."
+  } }
+      */
+    return successResponse(res, 200, "Request Successfully", {
+      hackerDetails: {
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        uid: user.uid,
+        role: existingHacker.role,
+        registeredOn: existingHacker.registered_at,
+      },
+    });
+  } catch (error) {
+    // Handle error
+    return errorResponse(res, 500, "Internal Error", error);
+  }
+};
+
+const hackers = { create, login, getHacker, getLoggedInHacker };
 export default hackers;

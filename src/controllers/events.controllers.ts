@@ -55,7 +55,7 @@ const register = async (req: Request, res: Response) => {
         event_id: event.id,
         registrationDetails: req.body,
       },
-      include: { event: true },
+      include: { event: true, user: true },
     });
 
     // Update attendee count in event
@@ -67,9 +67,9 @@ const register = async (req: Request, res: Response) => {
     // Send mail
     const response = await sendMail(
       email,
-      `You have successfully registered for ${attendee.event.name}`,
+      `${attendee.user.first_name} You’re In!`,
       "event_registration",
-      {}
+      { firstName: attendee.user.first_name }
     );
     if (response.rejected.includes(email))
       // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
