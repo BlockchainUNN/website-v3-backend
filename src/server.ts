@@ -13,6 +13,7 @@ import eventsRoutes from "./routes/events.routes";
 import userRoutes from "./routes/users/users.routes";
 import getEventsRoutes from "./routes/events/events.routes";
 import hackersRoutes from "./routes/hackathons/hackers.routes";
+import teamsRoutes from "./routes/hackathons/teams.routes";
 
 dotenv.config();
 const app = express();
@@ -70,6 +71,7 @@ app.use("/api/v3/", hackersRoutes);
 
 // PROTECTED ROUTES BELOW HERE
 app.use(AuthMiddleware.protectRoute);
+app.use("/api/v3/", teamsRoutes);
 app.use("/api/v3/", permissionsCheck({ role: "admin" }), roleRoutes);
 
 //initializing server

@@ -1,11 +1,10 @@
 import prisma from "../../../prisma/client";
 import { errorResponse, successResponse } from "../../utils/responseHandlers";
 import { isValidEmailAddress } from "../../utils/validationHandlers";
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import bycrypt from "bcrypt";
 import { sendMail } from "../../utils/mailHandler";
 import { createAuthTokens } from "../../utils/tokenHandlers";
-import { resolveTxt } from "dns";
 
 const create = async (req: Request, res: Response) => {
   // #swagger.tags = ['Hackers']
@@ -112,7 +111,7 @@ const create = async (req: Request, res: Response) => {
 };
 
 const login = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Hacker']
+  // #swagger.tags = ['Hackers']
   // #swagger.summary = 'Endpoint for signing into a hacker account'
 
   try {
@@ -228,6 +227,7 @@ const login = async (req: Request, res: Response) => {
             email: user.email,
             uid: user.uid,
             role: existingHacker.role,
+            registeredOn: existingHacker.registered_at,
           },
         });
       }
@@ -239,7 +239,7 @@ const login = async (req: Request, res: Response) => {
 };
 
 const getHacker = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Hacker']
+  // #swagger.tags = ['Hackers']
   // #swagger.summary = 'Endpoint for getting a hacker account'
 
   try {
@@ -247,6 +247,7 @@ const getHacker = async (req: Request, res: Response) => {
     //  #swagger.parameters["email"] = {in: "path", description: "Hackers email"}
     const hackathonUid = req.params?.id;
     const email = req.params?.email;
+    console.table({ hackathonUid, email });
 
     // Data Validations
     if (!email || !isValidEmailAddress(email))
@@ -300,6 +301,7 @@ const getHacker = async (req: Request, res: Response) => {
         email: user.email,
         uid: user.uid,
         role: existingHacker.role,
+        registeredOn: existingHacker.registered_at,
       },
     });
   } catch (error) {
@@ -308,5 +310,76 @@ const getHacker = async (req: Request, res: Response) => {
   }
 };
 
-const hackers = { create, login, getHacker };
+const getLoggedInHacker = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Hackers']
+  // #swagger.summary = 'Endpoint for getting a hacker account of a logged in user'
+
+  try {
+    //  #swagger.parameters["id"] = {in: "path", description: "The Unique id/name of the hackathon"}
+    const hackathonUid = req.params?.id;
+    const email = req.user?.email;
+    console.table({ hackathonUid, email });
+
+    // Data Validations
+    if (!email || !isValidEmailAddress(email))
+      /* #swagger.responses[400] = {
+              description: 'Bad request - Missing or invalid credentials',
+              schema: {
+                  error: 'You need to provide a valid email address',
+                  data: {details: "If more info is available it will be here."}
+              }
+          } 
+       */
+      return errorResponse(
+        res,
+        400,
+        "You need to provide a valid email address"
+      );
+
+    // Get hackathon
+    const hackathon = await prisma.hackathon.findUnique({
+      where: { unique_name: hackathonUid },
+    });
+    if (!hackathon)
+      return errorResponse(res, 404, "Path does not exist.", {
+        details: "Wrong hackathon unique Id/name.",
+      });
+
+    // Get User
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user)
+      return errorResponse(res, 400, "Hacker with email does not exist.");
+
+    // Check that hacker exists
+    const existingHacker = await prisma.hacker.findUnique({
+      where: { hackathon_id: hackathon.id, user_id: user?.id },
+    });
+    if (!existingHacker) {
+      return errorResponse(res, 400, "Hacker with email does not exists");
+    }
+
+    /* #swagger.responses[200] = {
+        description: 'Successful Request',
+        schema: {
+            message: 'Request Successfully',
+            data: "Any extra details."
+  } }
+      */
+    return successResponse(res, 200, "Request Successfully", {
+      hackerDetails: {
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        uid: user.uid,
+        role: existingHacker.role,
+        registeredOn: existingHacker.registered_at,
+      },
+    });
+  } catch (error) {
+    // Handle error
+    return errorResponse(res, 500, "Internal Error", error);
+  }
+};
+
+const hackers = { create, login, getHacker, getLoggedInHacker };
 export default hackers;

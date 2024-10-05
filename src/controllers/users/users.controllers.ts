@@ -115,38 +115,39 @@ const create = async (req: Request, res: Response) => {
       },
     });
 
-    const response = await sendMail(
-      email,
-      "Welcome To BlockchainUNN",
-      "onboarding",
-      {}
-    );
-    if (response.rejected.includes(email))
-      return errorResponse(
-        res,
-        403,
-        "Failed to deliver the email to the recipient. Please check the email address."
-      );
+    // TODO: Un comment this when the mail is ready
+    // const response = await sendMail(
+    //   email,
+    //   "Welcome To BlockchainUNN",
+    //   "onboarding",
+    //   {}
+    // );
+    // if (response.rejected.includes(email))
+    //   return errorResponse(
+    //     res,
+    //     403,
+    //     "Failed to deliver the email to the recipient. Please check the email address."
+    //   );
 
-    // Return User
-    if (response.accepted.includes(email))
-      // #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
-      return successResponse(
-        res,
-        201,
-        "Successful Registration. Community Links have been sent to email address.",
-        {
-          email: newUser.email,
-          firstName: newUser.first_name,
-          lastName: newUser.last_name,
-          subCommunity: newUser.sub_community,
-          techSkills: newUser.tech_skills,
-          phoneNumber,
-          gender,
-          uid: newUser.uid,
-          profilePic: profilePic_db?.image_url,
-        }
-      );
+    // // Return User
+    // if (response.accepted.includes(email))
+    // #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
+    return successResponse(
+      res,
+      201,
+      "Successful Registration. Community Links have been sent to email address.",
+      {
+        email: newUser.email,
+        firstName: newUser.first_name,
+        lastName: newUser.last_name,
+        subCommunity: newUser.sub_community,
+        techSkills: newUser.tech_skills,
+        phoneNumber,
+        gender,
+        uid: newUser.uid,
+        profilePic: profilePic_db?.image_url,
+      }
+    );
   } catch (error) {
     // Handle error
     // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
