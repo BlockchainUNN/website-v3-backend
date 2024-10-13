@@ -128,7 +128,7 @@ const getAttendee = async (req: Request, res: Response) => {
       where: { attendee_id: attendee.id, event_id: event.id },
       include: { event: true, user: true },
     });
-    if (!event)
+    if (!eventAttendee)
       return errorResponse(res, 404, "User has not registerd for the event");
 
     // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
