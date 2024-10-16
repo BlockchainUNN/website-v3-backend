@@ -30,6 +30,9 @@ model User {
   hashed_password String?
   roles           Role?           @relation(fields: [roleId], references: [id])
   sub_community   Json?
+  tech_skills     Json?
+  phone_number    String?
+  gender          String?
   profile_pic     Int?
   created_at      DateTime        @default(now())
   updated_at      DateTime        @updatedAt
@@ -84,7 +87,7 @@ model Image {
 // Todo: Add tags (upcoming, past e.t.c)
 model Event {
   id              Int             @id @default(autoincrement())
-  uid             String          @unique @default(uuid())
+  uid             String          @unique
   name            String
   cover_image     String
   description     String
@@ -117,7 +120,7 @@ model EventCohost {
 
 model Hackathon {
   id                    Int                 @id @default(autoincrement())
-  uid                   String              @unique @default(uuid())
+  unique_name           String              @unique
   name                  String
   description           String
   start_date            DateTime
@@ -129,6 +132,8 @@ model Hackathon {
   schedule              HackathonSchedule[]
   submissions           Submission[]
   teams                 Team[]
+
+  hackers Hacker[]
 }
 
 model HackathonCategory {
@@ -149,20 +154,19 @@ model HackathonSchedule {
   hackathon    Hackathon @relation(fields: [hackathon_id], references: [id])
 }
 
+// Note: Hacker accounts are hackathon specific
 model Hacker {
-  id              Int      @id @default(autoincrement())
-  user_id         Int      @unique
-  team_id         Int?
-  registered_at   DateTime @default(now())
-  user            User     @relation(fields: [user_id], references: [id])
-  team            Team?    @relation(fields: [team_id], references: [id])
+  id            Int       @id @default(autoincrement())
+  user_id       Int       @unique
+  role          String?
+  passwordHash  String?
+  hackathon_id  Int
+  team_id       Int?
+  registered_at DateTime  @default(now())
+  user          User      @relation(fields: [user_id], references: [id])
+  hackathon     Hackathon @relation(fields: [hackathon_id], references: [id])
+  team          Team?     @relation(fields: [team_id], references: [id])
 }
-
-// hacker team join table
-// id
-// hacker id
-// team id
-// hackathon id (unique together with team id)
 
 model Team {
   id           Int          @id @unique @default(autoincrement())
@@ -208,9 +212,10 @@ model EventGallery {
 }
 
 model EventAttendee {
-  id          Int   @id @default(autoincrement())
-  attendee_id Int
-  event_id    Int
-  user        User  @relation(fields: [attendee_id], references: [id])
-  event       Event @relation(fields: [event_id], references: [id])
+  id                  Int   @id @default(autoincrement())
+  registrationDetails Json?
+  attendee_id         Int
+  event_id            Int
+  user                User  @relation(fields: [attendee_id], references: [id])
+  event               Event @relation(fields: [event_id], references: [id])
 }

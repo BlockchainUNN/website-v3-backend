@@ -25,7 +25,7 @@ export async function sendMail(
     // Send mail
     const templateFunction = pug.compileFile(templatePath);
     const info = await transporter.sendMail({
-      from: `"Peter from the BLOCK" <${FROM_MAIL}>`,
+      from: `"The BlockchainUNN Team" <${FROM_MAIL}>`,
       to,
       subject,
       html: juice.inlineContent(templateFunction(options), cssFileContents), // Juice makes the external css file to be inline.
