@@ -17,7 +17,7 @@ import teamsRoutes from "./routes/hackathons/teams.routes";
 
 dotenv.config();
 const app = express();
-export const PORT = process.env.PORT || 8000;
+export const PORT = process.env.PORT || 8080;
 export const HOST = process.env.HOST || `127.0.0.1:${PORT}`;
 const EXTERNAL_HOST = process.env.EXTERNAL_HOST || HOST;
 
@@ -76,6 +76,6 @@ app.use("/api/v3/", teamsRoutes);
 app.use("/api/v3/", permissionsCheck({ role: "admin" }), roleRoutes);
 
 //initializing server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at  http://${HOST}`);
 });
