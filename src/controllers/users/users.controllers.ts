@@ -38,7 +38,11 @@ const create = async (req: Request, res: Response) => {
       return errorResponse(res, 400, "Invalid email address");
 
     if (phoneNumber && !isValidPhoneNumber(phoneNumber))
-      return errorResponse(res, 400, "Invalid phone number");
+      return errorResponse(
+        res,
+        400,
+        "Invalid phone number. Please start with a country code."
+      );
     if (gender.toLowerCase() === "male") {
       gender = "male";
     } else if (gender.toLowerCase() === "female") {
