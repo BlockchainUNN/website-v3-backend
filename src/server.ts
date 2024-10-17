@@ -26,6 +26,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5555",
   "http://127.0.0.1:8000",
+  "http://160.238.36.159",
   "https://blockchainunn-frontend.onrender.com",
 ];
 app.use(
