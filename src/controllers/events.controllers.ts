@@ -154,5 +154,27 @@ const getAttendee = async (req: Request, res: Response) => {
   }
 };
 
-const events = { register, getAttendee };
+const getAttendeeCount = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Events']
+  // #swagger.summary = "Endpoint for checking if someone is registered for a specific event"
+  try {
+    // #swagger.parameters['id'] = {description: "Id of the event we are checking", required: 'true'}
+    const eventId = req.params?.id;
+
+    // Get the event
+    const attendeeCount = await prisma.eventAttendee.count({
+      where: { event: { uid: eventId } },
+    });
+    if (!attendeeCount) return errorResponse(res, 404, "Event not found");
+
+    // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
+    return successResponse(res, 200, "Successfully", { attendeeCount });
+  } catch (error) {
+    // Handle error
+    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+    return errorResponse(res, 500, "Internal Error", { details: error });
+  }
+};
+
+const events = { register, getAttendee, getAttendeeCount };
 export default events;

@@ -10,6 +10,7 @@ hackersRoutes.get(
   AuthMiddleware.protectRoute,
   hackerControllers.getLoggedInHacker
 );
+hackersRoutes.get("/hackers/count/:id", hackerControllers.getHackerCount);
 hackersRoutes.get("/hackers/:id/:email", hackerControllers.getHacker);
 hackersRoutes.post("/hackers/login/:id", hackerControllers.login);
 

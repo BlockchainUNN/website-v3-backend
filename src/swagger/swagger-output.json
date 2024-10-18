@@ -972,6 +972,69 @@
         }
       }
     },
+    "/api/v3/events/attendees/count/{id}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Endpoint for checking if someone is registered for a specific event",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id of the event we are checking"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved succesfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": ""
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v3/events": {
       "get": {
         "description": "",
@@ -1350,6 +1413,45 @@
                       "example": "If more info is available it will be here."
                     }
                   }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/hackers/count/{id}": {
+      "get": {
+        "tags": [
+          "Hackers"
+        ],
+        "summary": "Endpoint for getting a hacker Count",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "The Unique id/name of the hackathon"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Request",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Request Successfully"
+                },
+                "data": {
+                  "type": "string",
+                  "example": "Any extra details."
                 }
               },
               "xml": {
