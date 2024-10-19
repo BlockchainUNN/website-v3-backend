@@ -310,6 +310,37 @@ const getHacker = async (req: Request, res: Response) => {
   }
 };
 
+const getHackerCount = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Hackers']
+  // #swagger.summary = 'Endpoint for getting a hacker Count'
+
+  try {
+    //  #swagger.parameters["id"] = {in: "path", description: "The Unique id/name of the hackathon"}
+    const hackathonUid = req.params?.id;
+
+    // Get hacker Count
+    const hackerCount = await prisma.hacker.count({
+      where: { hackathon: { unique_name: hackathonUid } },
+    });
+    if (!hackerCount)
+      return errorResponse(res, 404, "Path does not exist.", {
+        details: "Wrong hackathon unique Id/name.",
+      });
+
+    /* #swagger.responses[200] = {
+        description: 'Successful Request',
+        schema: {
+            message: 'Request Successfully',
+            data: "Any extra details."
+  } }
+      */
+    return successResponse(res, 200, "Request Successfully", { hackerCount });
+  } catch (error) {
+    // Handle error
+    return errorResponse(res, 500, "Internal Error", error);
+  }
+};
+
 const getLoggedInHacker = async (req: Request, res: Response) => {
   // #swagger.tags = ['Hackers']
   // #swagger.summary = 'Endpoint for getting a hacker account of a logged in user'
@@ -381,5 +412,5 @@ const getLoggedInHacker = async (req: Request, res: Response) => {
   }
 };
 
-const hackers = { create, login, getHacker, getLoggedInHacker };
+const hackers = { create, login, getHacker, getHackerCount, getLoggedInHacker };
 export default hackers;
