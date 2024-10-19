@@ -281,6 +281,35 @@ const getHacker = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", error);
     }
 });
+const getHackerCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // #swagger.tags = ['Hackers']
+    // #swagger.summary = 'Endpoint for getting a hacker Count'
+    var _a;
+    try {
+        //  #swagger.parameters["id"] = {in: "path", description: "The Unique id/name of the hackathon"}
+        const hackathonUid = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
+        // Get hacker Count
+        const hackerCount = yield client_1.default.hacker.count({
+            where: { hackathon: { unique_name: hackathonUid } },
+        });
+        if (!hackerCount)
+            return (0, responseHandlers_1.errorResponse)(res, 404, "Path does not exist.", {
+                details: "Wrong hackathon unique Id/name.",
+            });
+        /* #swagger.responses[200] = {
+            description: 'Successful Request',
+            schema: {
+                message: 'Request Successfully',
+                data: "Any extra details."
+      } }
+          */
+        return (0, responseHandlers_1.successResponse)(res, 200, "Request Successfully", { hackerCount });
+    }
+    catch (error) {
+        // Handle error
+        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", error);
+    }
+});
 const getLoggedInHacker = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // #swagger.tags = ['Hackers']
     // #swagger.summary = 'Endpoint for getting a hacker account of a logged in user'
@@ -343,5 +372,5 @@ const getLoggedInHacker = (req, res) => __awaiter(void 0, void 0, void 0, functi
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", error);
     }
 });
-const hackers = { create, login, getHacker, getLoggedInHacker };
+const hackers = { create, login, getHacker, getHackerCount, getLoggedInHacker };
 exports.default = hackers;
