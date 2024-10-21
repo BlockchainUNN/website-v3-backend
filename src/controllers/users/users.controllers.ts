@@ -119,22 +119,6 @@ const create = async (req: Request, res: Response) => {
       },
     });
 
-    // TODO: Un comment this when the mail is ready
-    // const response = await sendMail(
-    //   email,
-    //   "Welcome To BlockchainUNN",
-    //   "onboarding",
-    //   {}
-    // );
-    // if (response.rejected.includes(email))
-    //   return errorResponse(
-    //     res,
-    //     403,
-    //     "Failed to deliver the email to the recipient. Please check the email address."
-    //   );
-
-    // // Return User
-    // if (response.accepted.includes(email))
     // #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
     return successResponse(
       res,

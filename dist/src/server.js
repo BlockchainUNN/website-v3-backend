@@ -29,6 +29,7 @@ const EXTERNAL_HOST = process.env.EXTERNAL_HOST || exports.HOST;
 const allowedOrigins = [
     "http://localhost:3000",
     "https://blockchainunn.org",
+    "https://api.blockchainunn.org",
     "http://localhost:5555",
     "http://127.0.0.1:8000",
     "http://160.238.36.159",

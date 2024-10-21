@@ -104,21 +104,6 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 profile_pic: profilePic_db === null || profilePic_db === void 0 ? void 0 : profilePic_db.id,
             },
         });
-        // TODO: Un comment this when the mail is ready
-        // const response = await sendMail(
-        //   email,
-        //   "Welcome To BlockchainUNN",
-        //   "onboarding",
-        //   {}
-        // );
-        // if (response.rejected.includes(email))
-        //   return errorResponse(
-        //     res,
-        //     403,
-        //     "Failed to deliver the email to the recipient. Please check the email address."
-        //   );
-        // // Return User
-        // if (response.accepted.includes(email))
         // #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
         return (0, responseHandlers_1.successResponse)(res, 201, "Successful Registration. Community Links have been sent to email address.", {
             email: newUser.email,
