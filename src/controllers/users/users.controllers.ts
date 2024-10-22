@@ -41,7 +41,7 @@ const create = async (req: Request, res: Response) => {
       return errorResponse(
         res,
         400,
-        "Invalid phone number. Please start with a country code."
+        "Invalid phone number. Please check the format and ensure it starts with the country code."
       );
     if (gender.toLowerCase() === "male") {
       gender = "male";

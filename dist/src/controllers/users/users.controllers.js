@@ -43,7 +43,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
              */
             return (0, responseHandlers_1.errorResponse)(res, 400, "Invalid email address");
         if (phoneNumber && !(0, validationHandlers_1.isValidPhoneNumber)(phoneNumber))
-            return (0, responseHandlers_1.errorResponse)(res, 400, "Invalid phone number. Please start with a country code.");
+            return (0, responseHandlers_1.errorResponse)(res, 400, "Invalid phone number. Please check the format and ensure it starts with the country code.");
         if (gender.toLowerCase() === "male") {
             gender = "male";
         }
