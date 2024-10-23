@@ -170,7 +170,7 @@ model Hacker {
 
 model Team {
   id           Int          @id @unique @default(autoincrement())
-  name         String
+  name         String       @unique
   hackathon_id Int
   invite_code  String       @unique
   created_by   Int

@@ -30,6 +30,9 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!name)
             // #swagger.responses[400] = {description: 'Bad request - Missing or invalid data', schema: {error: 'No name was given', details: "If more info is available it will be here."}}
             return (0, responseHandlers_1.errorResponse)(res, 400, "No name was given");
+        const existingTeam = yield client_1.default.team.findUnique({ where: { name } });
+        if (existingTeam)
+            return (0, responseHandlers_1.errorResponse)(res, 400, `A team with the name ${name} already exists`);
         // Check if event exists
         const hackathon = yield client_1.default.hackathon.findUnique({
             where: { unique_name: hackathonId },

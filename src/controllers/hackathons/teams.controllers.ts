@@ -19,6 +19,14 @@ const create = async (req: Request, res: Response) => {
       // #swagger.responses[400] = {description: 'Bad request - Missing or invalid data', schema: {error: 'No name was given', details: "If more info is available it will be here."}}
       return errorResponse(res, 400, "No name was given");
 
+    const existingTeam = await prisma.team.findUnique({ where: { name } });
+    if (existingTeam)
+      return errorResponse(
+        res,
+        400,
+        `A team with the name ${name} already exists`
+      );
+
     // Check if event exists
     const hackathon = await prisma.hackathon.findUnique({
       where: { unique_name: hackathonId },
