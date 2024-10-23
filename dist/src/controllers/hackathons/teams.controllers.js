@@ -124,9 +124,14 @@ const join = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Check that team exists
         const team = yield client_1.default.team.findUnique({
             where: { invite_code: inviteCode.toUpperCase() },
+            include: { hackers: true },
         });
         if (!team)
             return (0, responseHandlers_1.errorResponse)(res, 400, `Team with invite code ${inviteCode} does note exist`);
+        // Check that the team has a maximum of 5 members
+        if (team.hackers.length >= 5) {
+            return (0, responseHandlers_1.errorResponse)(res, 400, `Each team has a maximum of 5 members. This team is full.`);
+        }
         // Add hacker to team
         const updatedHacker = yield client_1.default.hacker.update({
             where: { id: hacker.id },

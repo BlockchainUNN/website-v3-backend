@@ -127,6 +127,7 @@ const join = async (req: Request, res: Response) => {
     // Check that team exists
     const team = await prisma.team.findUnique({
       where: { invite_code: inviteCode.toUpperCase() },
+      include: { hackers: true },
     });
     if (!team)
       return errorResponse(
@@ -134,6 +135,15 @@ const join = async (req: Request, res: Response) => {
         400,
         `Team with invite code ${inviteCode} does note exist`
       );
+
+    // Check that the team has a maximum of 5 members
+    if (team.hackers.length >= 5) {
+      return errorResponse(
+        res,
+        400,
+        `Each team has a maximum of 5 members. This team is full.`
+      );
+    }
 
     // Add hacker to team
     const updatedHacker = await prisma.hacker.update({
