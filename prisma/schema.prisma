@@ -216,6 +216,6 @@ model EventAttendee {
   registrationDetails Json?
   attendee_id         Int
   event_id            Int
-  user                User  @relation(fields: [attendee_id], references: [id])
+  user                User  @relation(fields: [attendee_id], references: [id],  onDelete: Cascade)
   event               Event @relation(fields: [event_id], references: [id])
 }
