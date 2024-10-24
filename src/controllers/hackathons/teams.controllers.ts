@@ -19,7 +19,7 @@ const create = async (req: Request, res: Response) => {
       // #swagger.responses[400] = {description: 'Bad request - Missing or invalid data', schema: {error: 'No name was given', details: "If more info is available it will be here."}}
       return errorResponse(res, 400, "No name was given");
 
-    const existingTeam = await prisma.team.findUnique({ where: { name } });
+    const existingTeam = await prisma.team.findFirst({ where: { name } });
     if (existingTeam)
       return errorResponse(
         res,
