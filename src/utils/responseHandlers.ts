@@ -23,3 +23,9 @@ export const errorResponse = (
     details,
   });
 };
+
+export const downloadResponse = (res: Response, status: number, data?: any) => {
+  res.setHeader("Content-disposition", "attachment; filename=data.csv");
+  res.set("Content-Type", "text/csv");
+  return res.status(Number(status)).send(data);
+};

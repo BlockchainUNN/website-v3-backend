@@ -1,8 +1,13 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "../utils/responseHandlers";
+import {
+  downloadResponse,
+  errorResponse,
+  successResponse,
+} from "../utils/responseHandlers";
 import { isValidEmailAddress } from "../utils/validationHandlers";
 import prisma from "../../prisma/client";
 import { sendMail } from "../utils/mailHandler";
+import converter from "json-2-csv";
 
 const register = async (req: Request, res: Response) => {
   // #swagger.tags = ['Events']
@@ -176,5 +181,33 @@ const getAttendeeCount = async (req: Request, res: Response) => {
   }
 };
 
-const events = { register, getAttendee, getAttendeeCount };
+const downloadAttendee = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Events']
+  // #swagger.summary = "Endpoint for downloading Attendees of a specific event"
+  try {
+    // #swagger.parameters['id'] = {description: "Id of the event we are checking", required: 'true'}
+    const eventId = req.params?.id;
+
+    // Get the event
+    const event = await prisma.event.findUnique({ where: { uid: eventId } });
+    if (!event) return errorResponse(res, 404, "Event not found");
+
+    // Get event attendees
+    const eventAttendees = await prisma.eventAttendee.findMany({
+      where: { event_id: event.id },
+      include: { event: true, user: true },
+    });
+
+    const cvs = converter.json2csv(eventAttendees);
+
+    // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
+    return downloadResponse(res, 200, cvs);
+  } catch (error) {
+    // Handle error
+    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+    return errorResponse(res, 500, "Internal Error", { details: error });
+  }
+};
+
+const events = { register, downloadAttendee, getAttendee, getAttendeeCount };
 export default events;

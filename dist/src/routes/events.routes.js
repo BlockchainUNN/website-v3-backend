@@ -9,5 +9,6 @@ const eventsRoutes = express_1.default.Router();
 // Basic Events Routes
 eventsRoutes.post("/events/registeration/:id", events_controllers_1.default.register);
 eventsRoutes.post("/events/attendees/:id", events_controllers_1.default.getAttendee);
+eventsRoutes.get("/events/attendees/:id", events_controllers_1.default.downloadAttendee);
 eventsRoutes.get("/events/attendees/count/:id", events_controllers_1.default.getAttendeeCount);
 exports.default = eventsRoutes;

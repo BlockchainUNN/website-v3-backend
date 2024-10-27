@@ -970,6 +970,67 @@
             }
           }
         }
+      },
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Endpoint for downloading Attendees of a specific event",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id of the event we are checking"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved succesfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": ""
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
       }
     },
     "/api/v3/events/attendees/count/{id}": {
