@@ -1486,7 +1486,7 @@
         }
       }
     },
-    "/api/v3/hackers/{id}/download-cvs": {
+    "/api/v3/hackers/{id}/download-csv": {
       "get": {
         "tags": [
           "Hackers"
@@ -2121,6 +2121,93 @@
             "apiKeyAuth": []
           }
         ]
+      }
+    },
+    "/api/v3/hackathon/team/{id}/download-csv": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Endpoint for downloading Teams details",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Id of the hackathon we are checking"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User details retrieved succesfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": ""
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "You are not authorized to use this service."
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "string",
+                      "example": "If more info is available it will be here."
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
       }
     },
     "/api/v3/hackathon/team/join/{id}": {

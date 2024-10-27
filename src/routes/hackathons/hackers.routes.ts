@@ -6,7 +6,7 @@ const hackersRoutes = Router();
 
 hackersRoutes.post("/hackers/:id", hackerControllers.create);
 hackersRoutes.get(
-  "/hackers/:id/download-cvs",
+  "/hackers/:id/download-csv",
   hackerControllers.downloadHackers
 );
 hackersRoutes.get(
