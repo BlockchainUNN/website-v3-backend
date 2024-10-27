@@ -163,7 +163,7 @@ model Hacker {
   hackathon_id  Int
   team_id       Int?
   registered_at DateTime  @default(now())
-  user          User      @relation(fields: [user_id], references: [id],  onDelete: Cascade)
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   hackathon     Hackathon @relation(fields: [hackathon_id], references: [id])
   team          Team?     @relation(fields: [team_id], references: [id])
 }
@@ -185,7 +185,7 @@ model Submission {
   team_id             Int
   hackathon_id        Int
   project_name        String
-  // category            String
+  category            String?
   project_description String
   github_links        String
   demo_video_link     String
@@ -217,6 +217,6 @@ model EventAttendee {
   registrationDetails Json?
   attendee_id         Int
   event_id            Int
-  user                User  @relation(fields: [attendee_id], references: [id],  onDelete: Cascade)
+  user                User  @relation(fields: [attendee_id], references: [id], onDelete: Cascade)
   event               Event @relation(fields: [event_id], references: [id])
 }
