@@ -20,6 +20,7 @@ const users_routes_1 = __importDefault(require("./routes/users/users.routes"));
 const events_routes_2 = __importDefault(require("./routes/events/events.routes"));
 const hackers_routes_1 = __importDefault(require("./routes/hackathons/hackers.routes"));
 const teams_routes_1 = __importDefault(require("./routes/hackathons/teams.routes"));
+const submissions_routes_1 = __importDefault(require("./routes/hackathons/submissions.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.PORT = process.env.PORT || 8000;
@@ -70,6 +71,7 @@ app.use("/api/v3/", hackers_routes_1.default);
 // PROTECTED ROUTES BELOW HERE
 app.use(auth_middleware_1.default.protectRoute);
 app.use("/api/v3/", teams_routes_1.default);
+app.use("/api/v3/", submissions_routes_1.default);
 app.use("/api/v3/", (0, permissions_middleware_1.permissionsCheck)({ role: "admin" }), roles_routes_1.default);
 //initializing server
 app.listen(exports.PORT, () => {
