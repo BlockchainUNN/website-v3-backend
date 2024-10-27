@@ -6,6 +6,10 @@ const hackersRoutes = Router();
 
 hackersRoutes.post("/hackers/:id", hackerControllers.create);
 hackersRoutes.get(
+  "/hackers/:id/download-cvs",
+  hackerControllers.downloadHackers
+);
+hackersRoutes.get(
   "/hackers/:id",
   AuthMiddleware.protectRoute,
   hackerControllers.getLoggedInHacker

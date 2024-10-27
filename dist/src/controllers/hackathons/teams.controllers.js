@@ -271,5 +271,42 @@ const leaveTeam = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
     }
 });
-const teams = { create, join, getTeam, leaveTeam };
+const downloadTeamsData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // #swagger.tags = ['Teams']
+    // #swagger.summary = 'Endpoint for downloading Teams details'
+    var _a;
+    try {
+        // #swagger.parameters['id'] = {description: "Id of the hackathon we are checking", required: 'true'}
+        const hackathonId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
+        // Get teams
+        const teams = yield client_1.default.team.findMany({
+            where: { hackathon: { unique_name: hackathonId } },
+            select: {
+                name: true,
+                created_at: true,
+                submission: {
+                    select: {
+                        project_name: true,
+                        // category: true,
+                    },
+                },
+            },
+        });
+        const data = teams.map((detail) => {
+            return {
+                name: detail.name,
+                // projectSubmitted: detail.
+            };
+        });
+        // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
+        return (0, responseHandlers_1.cvsResponse)(res, 200, "hackersDetails", data);
+    }
+    catch (error) {
+        // Handle error
+        console.log(error);
+        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
+    }
+});
+const teams = { create, join, getTeam, leaveTeam, downloadTeamsData };
 exports.default = teams;

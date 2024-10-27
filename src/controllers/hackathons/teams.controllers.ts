@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import prisma from "../../../prisma/client";
-import { errorResponse, successResponse } from "../../utils/responseHandlers";
+import {
+  cvsResponse,
+  errorResponse,
+  successResponse,
+} from "../../utils/responseHandlers";
 import { randomValueHex } from "../../utils/randomValue";
 
 const create = async (req: Request, res: Response) => {
@@ -309,5 +313,46 @@ const leaveTeam = async (req: Request, res: Response) => {
   }
 };
 
-const teams = { create, join, getTeam, leaveTeam };
+const downloadTeamsData = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Teams']
+  // #swagger.summary = 'Endpoint for downloading Teams details'
+
+  try {
+    // #swagger.parameters['id'] = {description: "Id of the hackathon we are checking", required: 'true'}
+    const hackathonId = req.params?.id;
+
+    // Get teams
+    const teams = await prisma.team.findMany({
+      where: { hackathon: { unique_name: hackathonId } },
+      select: {
+        name: true,
+        created_at: true,
+        submission: {
+          select: {
+            project_name: true,
+            // category: true,
+          },
+        },
+      },
+    });
+
+    const data = teams.map((detail) => {
+      return {
+        name: detail.name,
+        // projectSubmitted: detail.
+      };
+    });
+
+    // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
+    return cvsResponse(res, 200, "hackersDetails", data);
+  } catch (error) {
+    // Handle error
+    console.log(error);
+
+    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+    return errorResponse(res, 500, "Internal Error", { details: error });
+  }
+};
+
+const teams = { create, join, getTeam, leaveTeam, downloadTeamsData };
 export default teams;

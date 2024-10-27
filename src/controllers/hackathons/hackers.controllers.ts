@@ -1,5 +1,9 @@
 import prisma from "../../../prisma/client";
-import { errorResponse, successResponse } from "../../utils/responseHandlers";
+import {
+  cvsResponse,
+  errorResponse,
+  successResponse,
+} from "../../utils/responseHandlers";
 import { isValidEmailAddress } from "../../utils/validationHandlers";
 import { Request, Response } from "express";
 import bycrypt from "bcrypt";
@@ -412,5 +416,66 @@ const getLoggedInHacker = async (req: Request, res: Response) => {
   }
 };
 
-const hackers = { create, login, getHacker, getHackerCount, getLoggedInHacker };
+const downloadHackers = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Hackers']
+  // #swagger.summary = 'Endpoint for downloading hacker's details'
+
+  try {
+    // #swagger.parameters['id'] = {description: "Id of the hackathon we are checking", required: 'true'}
+    const hackathonId = req.params?.id;
+
+    // Get hackers
+    const hackers = await prisma.hacker.findMany({
+      where: { hackathon: { unique_name: hackathonId } },
+      select: {
+        user: {
+          select: {
+            first_name: true,
+            last_name: true,
+            email: true,
+            tech_skills: true,
+            phone_number: true,
+            gender: true,
+          },
+        },
+        role: true,
+        registered_at: true,
+        team: { select: { name: true, created_at: true } },
+      },
+    });
+
+    const data = hackers.map((detail) => {
+      return {
+        firstName: detail.user.first_name,
+        lastName: detail.user.last_name,
+        email: detail.user.email,
+        phoneNumber: detail.user.phone_number,
+        gender: detail.user.gender,
+        techSkill: detail.user.tech_skills,
+        registeredAt: detail.registered_at,
+        role: detail.role,
+        team: detail.team?.name,
+        teamCreatedAt: detail.team?.created_at,
+      };
+    });
+
+    // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
+    return cvsResponse(res, 200, "hackersDetails", data);
+  } catch (error) {
+    // Handle error
+    console.log(error);
+
+    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+    return errorResponse(res, 500, "Internal Error", { details: error });
+  }
+};
+
+const hackers = {
+  create,
+  login,
+  getHacker,
+  getHackerCount,
+  getLoggedInHacker,
+  downloadHackers,
+};
 export default hackers;
