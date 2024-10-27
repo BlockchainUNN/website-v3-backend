@@ -970,7 +970,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v3/events/attendees/{id}/download-cvs": {
       "get": {
         "tags": [
           "Events"
