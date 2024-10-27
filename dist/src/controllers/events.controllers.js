@@ -16,7 +16,6 @@ const responseHandlers_1 = require("../utils/responseHandlers");
 const validationHandlers_1 = require("../utils/validationHandlers");
 const client_1 = __importDefault(require("../../prisma/client"));
 const mailHandler_1 = require("../utils/mailHandler");
-const json_2_csv_1 = __importDefault(require("json-2-csv"));
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     // #swagger.tags = ['Events']
@@ -168,14 +167,17 @@ const downloadAttendee = (req, res) => __awaiter(void 0, void 0, void 0, functio
         // Get event attendees
         const eventAttendees = yield client_1.default.eventAttendee.findMany({
             where: { event_id: event.id },
-            include: { event: true, user: true },
+            select: { registrationDetails: true },
         });
-        const cvs = json_2_csv_1.default.json2csv(eventAttendees);
+        const data = JSON.parse(JSON.stringify(eventAttendees.map((detail) => {
+            return detail.registrationDetails;
+        })));
         // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.downloadResponse)(res, 200, cvs);
+        return (0, responseHandlers_1.cvsResponse)(res, 200, "eventAttendeeDetails", data);
     }
     catch (error) {
         // Handle error
+        console.log(error);
         // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
     }

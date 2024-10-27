@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadResponse = exports.errorResponse = exports.successResponse = void 0;
+exports.cvsResponse = exports.errorResponse = exports.successResponse = void 0;
+const fast_csv_1 = require("fast-csv");
 const successResponse = (res, status, message, data) => {
     return res.status(Number(status)).json({
         message,
@@ -15,9 +16,15 @@ const errorResponse = (res, status, error, details) => {
     });
 };
 exports.errorResponse = errorResponse;
-const downloadResponse = (res, status, data) => {
-    res.setHeader("Content-disposition", "attachment; filename=data.csv");
-    res.set("Content-Type", "text/csv");
-    return res.status(Number(status)).send(data);
+const cvsResponse = (res, status, filename, data) => {
+    res.header("Content-Type", "text/csv");
+    res.attachment(filename + ".csv");
+    // Use fast-csv to write the CSV data and pipe it to the response
+    const csvStream = (0, fast_csv_1.format)({ headers: true });
+    csvStream.pipe(res);
+    // Write data to CSV stream and end the stream
+    data.forEach((record) => csvStream.write(record));
+    csvStream.end();
+    return res.status(Number(status));
 };
-exports.downloadResponse = downloadResponse;
+exports.cvsResponse = cvsResponse;
