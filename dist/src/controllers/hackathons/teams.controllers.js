@@ -287,19 +287,23 @@ const downloadTeamsData = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 submission: {
                     select: {
                         project_name: true,
-                        // category: true,
+                        category: true,
                     },
                 },
             },
         });
         const data = teams.map((detail) => {
+            var _a, _b, _c, _d;
             return {
                 name: detail.name,
-                // projectSubmitted: detail.
+                projectSubmitted: ((_b = (_a = detail.submission) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.project_name) ? true : false,
+                project: (_c = detail.submission) === null || _c === void 0 ? void 0 : _c[0].project_name,
+                category: (_d = detail.submission) === null || _d === void 0 ? void 0 : _d[0].category,
+                dateFormed: detail.created_at,
             };
         });
         // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.cvsResponse)(res, 200, "hackersDetails", data);
+        return (0, responseHandlers_1.cvsResponse)(res, 200, "teamDetails", data);
     }
     catch (error) {
         // Handle error

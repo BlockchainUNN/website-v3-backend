@@ -339,12 +339,15 @@ const downloadTeamsData = async (req: Request, res: Response) => {
     const data = teams.map((detail) => {
       return {
         name: detail.name,
-        // projectSubmitted: detail.
+        projectSubmitted: detail.submission?.[0]?.project_name ? true : false,
+        project: detail.submission?.[0].project_name,
+        category: detail.submission?.[0].category,
+        dateFormed: detail.created_at,
       };
     });
 
     // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
-    return cvsResponse(res, 200, "hackersDetails", data);
+    return cvsResponse(res, 200, "teamDetails", data);
   } catch (error) {
     // Handle error
     console.log(error);
