@@ -2329,11 +2329,8 @@
         "tags": [
           "Submissions"
         ],
-        "summary": "Endpoint for submitting Projects",
+        "summary": "Endpoint for   submitted Projects",
         "description": "",
-        "consumes": [
-          "multipart/form-data"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -2348,58 +2345,11 @@
             "required": true,
             "type": "string",
             "description": "Id of the team User is in"
-          },
-          {
-            "name": "name",
-            "in": "formData",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "description",
-            "in": "formData",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "category",
-            "in": "formData",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "liveLink",
-            "in": "formData",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "githubLink",
-            "in": "formData",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "demoVideoLink",
-            "in": "formData",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "documentationLink",
-            "in": "formData",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "images",
-            "in": "formData",
-            "type": "file"
           }
         ],
         "responses": {
           "201": {
-            "description": "New Submission  ",
+            "description": "New Submission created",
             "schema": {
               "type": "object",
               "properties": {
@@ -2429,7 +2379,7 @@
               "properties": {
                 "error": {
                   "type": "string",
-                  "example": "All fields are required"
+                  "example": "Hacker is not a member of this team."
                 },
                 "data": {
                   "type": "object",

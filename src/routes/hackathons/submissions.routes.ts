@@ -10,9 +10,6 @@ submissionsRoutes.post(
   submissionsControllers.create
 );
 
-submissionsRoutes.get(
-  "/submissions/:id/:teamId",
-  submissionsControllers.create
-);
+submissionsRoutes.get("/submissions/:id/:teamId", submissionsControllers.get);
 
 export default submissionsRoutes;
