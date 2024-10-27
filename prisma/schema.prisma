@@ -185,7 +185,7 @@ model Submission {
   team_id             Int
   hackathon_id        Int
   project_name        String
-  category            String
+  // category            String
   project_description String
   github_links        String
   demo_video_link     String
