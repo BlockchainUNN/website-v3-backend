@@ -201,7 +201,7 @@ model SubmissionImage {
   id            Int        @id @default(autoincrement())
   image_url     String
   submission_id Int
-  submission    Submission @relation(fields: [submission_id], references: [id])
+  submission    Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
 }
 
 model EventGallery {
