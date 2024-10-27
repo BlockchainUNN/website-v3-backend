@@ -103,7 +103,7 @@ const create = async (req: Request, res: Response) => {
       data: {
         team_id: teamId,
         hackathon_id: hacker.hackathon.id,
-        // category: category,
+        category: category,
         project_name: name,
         project_description: description,
         github_links: githubLink,

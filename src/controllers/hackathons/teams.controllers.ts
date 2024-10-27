@@ -330,7 +330,7 @@ const downloadTeamsData = async (req: Request, res: Response) => {
         submission: {
           select: {
             project_name: true,
-            // category: true,
+            category: true,
           },
         },
       },
