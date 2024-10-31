@@ -5,6 +5,14 @@ import AuthMiddleware from "../../middlewares/auth.middleware";
 const hackersRoutes = Router();
 
 hackersRoutes.post("/hackers/:id", hackerControllers.create);
+hackersRoutes.post(
+  "/hackers/:id/reset-password",
+  hackerControllers.resetHackerPassword
+);
+hackersRoutes.put(
+  "/hackers/:id/reset-password/callback",
+  hackerControllers.resetPasswordCallback
+);
 hackersRoutes.get(
   "/hackers/:id/download-csv",
   hackerControllers.downloadHackers

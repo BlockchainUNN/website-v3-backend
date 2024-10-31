@@ -18,6 +18,7 @@ const validationHandlers_1 = require("../../utils/validationHandlers");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const mailHandler_1 = require("../../utils/mailHandler");
 const tokenHandlers_1 = require("../../utils/tokenHandlers");
+const randomValue_1 = require("../../utils/randomValue");
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     // #swagger.tags = ['Hackers']
@@ -423,6 +424,120 @@ const downloadHackers = (req, res) => __awaiter(void 0, void 0, void 0, function
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
     }
 });
+const resetHackerPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    // #swagger.tags = ['Hackers']
+    // #swagger.summary = "Endpoint for resetting Hacker passwords"
+    try {
+        // #swagger.parameters['id'] = {description: "Id of the Hackerthon", required: 'true'}
+        // #swagger.parameters['body'] = { in: 'body', required: 'true', description: "Takes email, and any other details you send in will be saved as well in a json field", schema: {email: "jondoe@example.com"}}
+        const { email } = req.body;
+        const hackerthonId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
+        // Checl if hacker exists
+        const hacker = yield client_1.default.hacker.findFirst({
+            where: { user: { email }, hackathon: { unique_name: hackerthonId } },
+            include: { user: true },
+        });
+        if (!hacker)
+            return (0, responseHandlers_1.errorResponse)(res, 404, "User not found");
+        const otp = yield client_1.default.oTP.create({
+            data: {
+                userId: hacker.user.id,
+                expiration: new Date(Date.now() + 30 * 60 * 1000),
+                otpCode: (0, randomValue_1.randomValueHex)(6),
+            },
+        });
+        // Send mail
+        const response = yield (0, mailHandler_1.sendMail)(email, `${hacker.user.first_name} Your Password Reset link!!`, "reset_password", {
+            firstName: hacker.user.first_name,
+            code: otp.otpCode,
+            email: hacker.user.email,
+        });
+        if (response.rejected.includes(email))
+            // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
+            return (0, responseHandlers_1.errorResponse)(res, 403, "Failed to deliver the email to the recipient. Please check the email address.");
+        if (response.accepted.includes(email))
+            // #swagger.responses[201] = {description: 'User successfully registered for event.', schema: {message: 'Successful Registration. Confirmation mail has been sent to email address.', data: {details: "If more info is available it will be here."}}}
+            return (0, responseHandlers_1.successResponse)(res, 200, "Successful.");
+    }
+    catch (error) {
+        // Handle error
+        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
+    }
+});
+const resetPasswordCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    // #swagger.tags = ['Hackers']
+    // #swagger.summary = "Callback Endpoint for resetting Hacker passwords"
+    try {
+        // #swagger.parameters['id'] = {description: "Id of the Hackerthon", required: 'true'}
+        // #swagger.parameters['body'] = { in: 'body', required: 'true', description: "Takes email, and any other details you send in will be saved as well in a json field", schema: {email: "jondoe@example.com"}}
+        const { email, code, newPassword } = req.body;
+        const hackerthonId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
+        // Checl if hacker exists
+        const hacker = yield client_1.default.hacker.findFirst({
+            where: { user: { email }, hackathon: { unique_name: hackerthonId } },
+            include: { user: true },
+        });
+        if (!hacker)
+            return (0, responseHandlers_1.errorResponse)(res, 404, "User not found");
+        const otp = yield client_1.default.oTP.findFirst({
+            where: {
+                user: { email },
+                otpCode: code,
+            },
+        });
+        if (!otp)
+            return (0, responseHandlers_1.errorResponse)(res, 400, "Invalid Code");
+        if (new Date() > otp.expiration)
+            return (0, responseHandlers_1.errorResponse)(res, 400, "Expired Code");
+        if (otp.isUsed)
+            return (0, responseHandlers_1.errorResponse)(res, 400, "Code already used");
+        // Handle password hashing
+        bcrypt_1.default.genSalt(10, (err, salt) => {
+            if (err)
+                /* #swagger.responses[500] = {
+                        description: 'Something went wrong server side',
+                        schema: {
+                            error: 'Internal Server Error',
+                            data: {details: "If more info is available it will be here."}
+                        }
+                     }
+                    */
+                return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Server Error", {
+                    details: "Error generating password salt",
+                });
+            bcrypt_1.default.hash(newPassword, salt, (err, hashedPassword) => {
+                if (err)
+                    return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Server Error", {
+                        details: "Error hashing password",
+                    });
+                // Update Hacker in DB
+                client_1.default.hacker
+                    .update({
+                    where: { id: hacker.id },
+                    data: { passwordHash: hashedPassword },
+                    include: { hackathon: true, user: true, team: true },
+                })
+                    .then((updatedHacker) => {
+                    if (!updatedHacker) {
+                        // #swagger.responses[500] = {description: 'Account was not created. Something went wrong', schema: {error: 'Account was not created. Something went wrong', details: "If more info is available it will be here."}}
+                        return (0, responseHandlers_1.errorResponse)(res, 500, "Account was not updated. Something went wrong");
+                    }
+                    // #swagger.responses[201] = {description: 'Hacker account successfully created', schema: {message: 'Successful Registration.', data: {details: "If more info is available it will be here."}}}
+                    return (0, responseHandlers_1.successResponse)(res, 200, "Successful");
+                })
+                    .catch((err) => (0, responseHandlers_1.errorResponse)(res, 500, "could not create hacker", { details: err }));
+            });
+        });
+    }
+    catch (error) {
+        // Handle error
+        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
+    }
+});
 const hackers = {
     create,
     login,
@@ -430,5 +545,7 @@ const hackers = {
     getHackerCount,
     getLoggedInHacker,
     downloadHackers,
+    resetHackerPassword,
+    resetPasswordCallback,
 };
 exports.default = hackers;
