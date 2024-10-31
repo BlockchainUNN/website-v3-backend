@@ -8,7 +8,6 @@ const teams_controllers_1 = __importDefault(require("../../controllers/hackathon
 const teamsRoutes = (0, express_1.Router)();
 teamsRoutes.post("/hackathon/team/:id", teams_controllers_1.default.create);
 teamsRoutes.get("/hackathon/team/:id", teams_controllers_1.default.getTeam);
-teamsRoutes.get("/hackathon/team/:id/download-csv", teams_controllers_1.default.downloadTeamsData);
 teamsRoutes.delete("/hackathon/team/:id", teams_controllers_1.default.leaveTeam);
 teamsRoutes.post("/hackathon/team/join/:id", teams_controllers_1.default.join);
 exports.default = teamsRoutes;

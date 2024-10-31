@@ -21,6 +21,10 @@ const events_routes_2 = __importDefault(require("./routes/events/events.routes")
 const hackers_routes_1 = __importDefault(require("./routes/hackathons/hackers.routes"));
 const teams_routes_1 = __importDefault(require("./routes/hackathons/teams.routes"));
 const submissions_routes_1 = __importDefault(require("./routes/hackathons/submissions.routes"));
+const teams_routes_2 = __importDefault(require("./routes/admin/teams.routes"));
+const events_routes_3 = __importDefault(require("./routes/admin/events.routes"));
+const submission_routes_1 = __importDefault(require("./routes/admin/submission.routes"));
+const hackers_routes_2 = __importDefault(require("./routes/admin/hackers.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.PORT = process.env.PORT || 8000;
@@ -37,16 +41,17 @@ const allowedOrigins = [
     "https://blockchainunn-frontend.onrender.com",
 ];
 app.use((0, cors_1.default)({
-    origin: function (origin, callback) {
-        // allow requests with no origin (like mobile apps or curl requests)
-        if (!origin)
-            return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = "The CORS policy for this site does not allow access from the specified Origin.";
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
+    origin: true,
+    // function (origin, callback) {
+    //   // allow requests with no origin (like mobile apps or curl requests)
+    //   if (!origin) return callback(null, true);
+    //   if (allowedOrigins.indexOf(origin) === -1) {
+    //     const msg =
+    //       "The CORS policy for this site does not allow access from the specified Origin.";
+    //     return callback(new Error(msg), false);
+    //   }
+    //   return callback(null, true);
+    // },
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
@@ -73,6 +78,10 @@ app.use(auth_middleware_1.default.protectRoute);
 app.use("/api/v3/", teams_routes_1.default);
 app.use("/api/v3/", submissions_routes_1.default);
 app.use("/api/v3/", (0, permissions_middleware_1.permissionsCheck)({ role: "admin" }), roles_routes_1.default);
+app.use("/api/v3/", (0, permissions_middleware_1.permissionsCheck)({ role: "admin" }), teams_routes_2.default);
+app.use("/api/v3/", (0, permissions_middleware_1.permissionsCheck)({ role: "admin" }), events_routes_3.default);
+app.use("/api/v3/", (0, permissions_middleware_1.permissionsCheck)({ role: "admin" }), submission_routes_1.default);
+app.use("/api/v3/", (0, permissions_middleware_1.permissionsCheck)({ role: "admin" }), hackers_routes_2.default);
 //initializing server
 app.listen(exports.PORT, () => {
     console.log(`Server running at  http://${exports.HOST}`);

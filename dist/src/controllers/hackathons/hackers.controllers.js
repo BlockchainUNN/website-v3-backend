@@ -373,57 +373,6 @@ const getLoggedInHacker = (req, res) => __awaiter(void 0, void 0, void 0, functi
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", error);
     }
 });
-const downloadHackers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // #swagger.tags = ['Hackers']
-    // #swagger.summary = 'Endpoint for downloading hacker's details'
-    var _a;
-    try {
-        // #swagger.parameters['id'] = {description: "Id of the hackathon we are checking", required: 'true'}
-        const hackathonId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
-        // Get hackers
-        const hackers = yield client_1.default.hacker.findMany({
-            where: { hackathon: { unique_name: hackathonId } },
-            select: {
-                user: {
-                    select: {
-                        first_name: true,
-                        last_name: true,
-                        email: true,
-                        tech_skills: true,
-                        phone_number: true,
-                        gender: true,
-                    },
-                },
-                role: true,
-                registered_at: true,
-                team: { select: { name: true, created_at: true } },
-            },
-        });
-        const data = hackers.map((detail) => {
-            var _a, _b;
-            return {
-                firstName: detail.user.first_name,
-                lastName: detail.user.last_name,
-                email: detail.user.email,
-                phoneNumber: detail.user.phone_number,
-                gender: detail.user.gender,
-                techSkill: detail.user.tech_skills,
-                registeredAt: detail.registered_at,
-                role: detail.role,
-                team: (_a = detail.team) === null || _a === void 0 ? void 0 : _a.name,
-                teamCreatedAt: (_b = detail.team) === null || _b === void 0 ? void 0 : _b.created_at,
-            };
-        });
-        // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.cvsResponse)(res, 200, "hackersDetails", data);
-    }
-    catch (error) {
-        // Handle error
-        console.log(error);
-        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
-        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
-    }
-});
 const resetHackerPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     // #swagger.tags = ['Hackers']
@@ -475,6 +424,7 @@ const resetPasswordCallback = (req, res) => __awaiter(void 0, void 0, void 0, fu
         // #swagger.parameters['body'] = { in: 'body', required: 'true', description: "Takes email, and any other details you send in will be saved as well in a json field", schema: {email: "jondoe@example.com"}}
         const { email, code, newPassword } = req.body;
         const hackerthonId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
+        console.table({ email, hackerthonId });
         // Checl if hacker exists
         const hacker = yield client_1.default.hacker.findFirst({
             where: { user: { email }, hackathon: { unique_name: hackerthonId } },
@@ -494,6 +444,7 @@ const resetPasswordCallback = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return (0, responseHandlers_1.errorResponse)(res, 400, "Expired Code");
         if (otp.isUsed)
             return (0, responseHandlers_1.errorResponse)(res, 400, "Code already used");
+        console.log("Everything Checked out. Generating a new Hash now");
         // Handle password hashing
         bcrypt_1.default.genSalt(10, (err, salt) => {
             if (err)
@@ -514,6 +465,7 @@ const resetPasswordCallback = (req, res) => __awaiter(void 0, void 0, void 0, fu
                         details: "Error hashing password",
                     });
                 // Update Hacker in DB
+                client_1.default.oTP.update({ where: { id: otp.id }, data: { isUsed: true } });
                 client_1.default.hacker
                     .update({
                     where: { id: hacker.id },
@@ -544,7 +496,6 @@ const hackers = {
     getHacker,
     getHackerCount,
     getLoggedInHacker,
-    downloadHackers,
     resetHackerPassword,
     resetPasswordCallback,
 };

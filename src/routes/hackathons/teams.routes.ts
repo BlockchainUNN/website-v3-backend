@@ -5,10 +5,6 @@ const teamsRoutes = Router();
 
 teamsRoutes.post("/hackathon/team/:id", teamsController.create);
 teamsRoutes.get("/hackathon/team/:id", teamsController.getTeam);
-teamsRoutes.get(
-  "/hackathon/team/:id/download-csv",
-  teamsController.downloadTeamsData
-);
 teamsRoutes.delete("/hackathon/team/:id", teamsController.leaveTeam);
 teamsRoutes.post("/hackathon/team/join/:id", teamsController.join);
 

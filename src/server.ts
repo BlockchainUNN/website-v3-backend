@@ -15,6 +15,10 @@ import getEventsRoutes from "./routes/events/events.routes";
 import hackersRoutes from "./routes/hackathons/hackers.routes";
 import teamsRoutes from "./routes/hackathons/teams.routes";
 import submissionsRoutes from "./routes/hackathons/submissions.routes";
+import adminTeamsRoutes from "./routes/admin/teams.routes";
+import adminEventsRoutes from "./routes/admin/events.routes";
+import adminSubmissionRoutes from "./routes/admin/submission.routes";
+import AdminHackersRoutes from "./routes/admin/hackers.routes";
 
 dotenv.config();
 const app = express();
@@ -34,16 +38,17 @@ const allowedOrigins = [
 ];
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
+    origin: true,
+    // function (origin, callback) {
+    //   // allow requests with no origin (like mobile apps or curl requests)
+    //   if (!origin) return callback(null, true);
+    //   if (allowedOrigins.indexOf(origin) === -1) {
+    //     const msg =
+    //       "The CORS policy for this site does not allow access from the specified Origin.";
+    //     return callback(new Error(msg), false);
+    //   }
+    //   return callback(null, true);
+    // },
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
@@ -78,6 +83,10 @@ app.use(AuthMiddleware.protectRoute);
 app.use("/api/v3/", teamsRoutes);
 app.use("/api/v3/", submissionsRoutes);
 app.use("/api/v3/", permissionsCheck({ role: "admin" }), roleRoutes);
+app.use("/api/v3/", permissionsCheck({ role: "admin" }), adminTeamsRoutes);
+app.use("/api/v3/", permissionsCheck({ role: "admin" }), adminEventsRoutes);
+app.use("/api/v3/", permissionsCheck({ role: "admin" }), adminSubmissionRoutes);
+app.use("/api/v3/", permissionsCheck({ role: "admin" }), AdminHackersRoutes);
 
 //initializing server
 app.listen(PORT, () => {

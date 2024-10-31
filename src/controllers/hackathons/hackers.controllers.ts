@@ -417,60 +417,6 @@ const getLoggedInHacker = async (req: Request, res: Response) => {
   }
 };
 
-const downloadHackers = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Hackers']
-  // #swagger.summary = 'Endpoint for downloading hacker's details'
-
-  try {
-    // #swagger.parameters['id'] = {description: "Id of the hackathon we are checking", required: 'true'}
-    const hackathonId = req.params?.id;
-
-    // Get hackers
-    const hackers = await prisma.hacker.findMany({
-      where: { hackathon: { unique_name: hackathonId } },
-      select: {
-        user: {
-          select: {
-            first_name: true,
-            last_name: true,
-            email: true,
-            tech_skills: true,
-            phone_number: true,
-            gender: true,
-          },
-        },
-        role: true,
-        registered_at: true,
-        team: { select: { name: true, created_at: true } },
-      },
-    });
-
-    const data = hackers.map((detail) => {
-      return {
-        firstName: detail.user.first_name,
-        lastName: detail.user.last_name,
-        email: detail.user.email,
-        phoneNumber: detail.user.phone_number,
-        gender: detail.user.gender,
-        techSkill: detail.user.tech_skills,
-        registeredAt: detail.registered_at,
-        role: detail.role,
-        team: detail.team?.name,
-        teamCreatedAt: detail.team?.created_at,
-      };
-    });
-
-    // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
-    return cvsResponse(res, 200, "hackersDetails", data);
-  } catch (error) {
-    // Handle error
-    console.log(error);
-
-    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
-    return errorResponse(res, 500, "Internal Error", { details: error });
-  }
-};
-
 const resetHackerPassword = async (req: Request, res: Response) => {
   // #swagger.tags = ['Hackers']
   // #swagger.summary = "Endpoint for resetting Hacker passwords"
@@ -532,6 +478,7 @@ const resetPasswordCallback = async (req: Request, res: Response) => {
     // #swagger.parameters['body'] = { in: 'body', required: 'true', description: "Takes email, and any other details you send in will be saved as well in a json field", schema: {email: "jondoe@example.com"}}
     const { email, code, newPassword } = req.body;
     const hackerthonId = req.params?.id;
+    console.table({ email, hackerthonId });
 
     // Checl if hacker exists
     const hacker = await prisma.hacker.findFirst({
@@ -550,6 +497,8 @@ const resetPasswordCallback = async (req: Request, res: Response) => {
     if (new Date() > otp.expiration)
       return errorResponse(res, 400, "Expired Code");
     if (otp.isUsed) return errorResponse(res, 400, "Code already used");
+
+    console.log("Everything Checked out. Generating a new Hash now");
 
     // Handle password hashing
     bycrypt.genSalt(10, (err, salt) => {
@@ -573,6 +522,7 @@ const resetPasswordCallback = async (req: Request, res: Response) => {
           });
 
         // Update Hacker in DB
+        prisma.oTP.update({ where: { id: otp.id }, data: { isUsed: true } });
         prisma.hacker
           .update({
             where: { id: hacker.id },
@@ -610,7 +560,6 @@ const hackers = {
   getHacker,
   getHackerCount,
   getLoggedInHacker,
-  downloadHackers,
   resetHackerPassword,
   resetPasswordCallback,
 };

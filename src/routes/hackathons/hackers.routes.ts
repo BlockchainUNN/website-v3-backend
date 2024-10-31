@@ -9,13 +9,9 @@ hackersRoutes.post(
   "/hackers/:id/reset-password",
   hackerControllers.resetHackerPassword
 );
-hackersRoutes.put(
+hackersRoutes.post(
   "/hackers/:id/reset-password/callback",
   hackerControllers.resetPasswordCallback
-);
-hackersRoutes.get(
-  "/hackers/:id/download-csv",
-  hackerControllers.downloadHackers
 );
 hackersRoutes.get(
   "/hackers/:id",
