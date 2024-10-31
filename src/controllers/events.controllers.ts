@@ -7,7 +7,6 @@ import {
 import { isValidEmailAddress } from "../utils/validationHandlers";
 import prisma from "../../prisma/client";
 import { sendMail } from "../utils/mailHandler";
-import converter from "json-2-csv";
 
 const register = async (req: Request, res: Response) => {
   // #swagger.tags = ['Events']

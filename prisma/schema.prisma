@@ -37,6 +37,7 @@ model User {
   created_at      DateTime        @default(now())
   updated_at      DateTime        @updatedAt
   eventAttendee   EventAttendee[]
+  OTP OTP[]
   event           Event[]         @relation("EventHost")
   roleId          Int?
   Hacker          Hacker?
@@ -219,4 +220,16 @@ model EventAttendee {
   event_id            Int
   user                User  @relation(fields: [attendee_id], references: [id], onDelete: Cascade)
   event               Event @relation(fields: [event_id], references: [id])
+}
+
+model OTP {
+  id          String   @id @default(uuid())  // Unique identifier, UUID by default
+  otpCode     String   
+  expiration  DateTime 
+  isUsed      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  // Relation to the User model
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
 }
