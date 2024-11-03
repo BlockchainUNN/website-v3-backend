@@ -19,6 +19,7 @@ import adminTeamsRoutes from "./routes/admin/teams.routes";
 import adminEventsRoutes from "./routes/admin/events.routes";
 import adminSubmissionRoutes from "./routes/admin/submission.routes";
 import AdminHackersRoutes from "./routes/admin/hackers.routes";
+import bootcampRoutes from "./routes/bootcamp/bootcamp.routes";
 
 dotenv.config();
 const app = express();
@@ -77,6 +78,7 @@ app.use("/api/v3/", userRoutes);
 app.use("/api/v3/", eventsRoutes);
 app.use("/api/v3/", getEventsRoutes);
 app.use("/api/v3/", hackersRoutes);
+app.use("/api/v3/", bootcampRoutes);
 
 // PROTECTED ROUTES BELOW HERE
 app.use(AuthMiddleware.protectRoute);

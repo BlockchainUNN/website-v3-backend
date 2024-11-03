@@ -25,6 +25,7 @@ const teams_routes_2 = __importDefault(require("./routes/admin/teams.routes"));
 const events_routes_3 = __importDefault(require("./routes/admin/events.routes"));
 const submission_routes_1 = __importDefault(require("./routes/admin/submission.routes"));
 const hackers_routes_2 = __importDefault(require("./routes/admin/hackers.routes"));
+const bootcamp_routes_1 = __importDefault(require("./routes/bootcamp/bootcamp.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.PORT = process.env.PORT || 8000;
@@ -73,6 +74,7 @@ app.use("/api/v3/", users_routes_1.default);
 app.use("/api/v3/", events_routes_1.default);
 app.use("/api/v3/", events_routes_2.default);
 app.use("/api/v3/", hackers_routes_1.default);
+app.use("/api/v3/", bootcamp_routes_1.default);
 // PROTECTED ROUTES BELOW HERE
 app.use(auth_middleware_1.default.protectRoute);
 app.use("/api/v3/", teams_routes_1.default);
