@@ -1,70 +1,81 @@
-// import { Request, Response } from "express";
-// import { isValidEmailAddress } from "../../utils/validationHandlers";
-// import { errorResponse, successResponse } from "../../utils/responseHandlers";
-// import prisma from "../../../prisma/client";
-// import { sendMail } from "../../utils/mailHandler";
+import { Request, Response } from "express";
+import { isValidEmailAddress } from "../../utils/validationHandlers";
+import { errorResponse, successResponse } from "../../utils/responseHandlers";
+import prisma from "../../../prisma/client";
+import { sendMail } from "../../utils/mailHandler";
 
-// const register = async (req: Request, res: Response) => {
-//   // #swagger.tags = ['Bootcamp']
-//   // #swagger.summary = "Endpoint for registering for an the bootcamp"
-//   try {
-//     const {
-//       firstName,
-//       lastName,
-//       phoneNumber,
-//       email,
-//       track,
-//       levelOfExperience,
-//       reasonForJoining,
-//       goals,
-//       location,
-//       availability,
-//     } = req.body;
+const register = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Bootcamp']
+  // #swagger.summary = "Endpoint for registering for an the bootcamp"
+  try {
+    const {
+      firstName,
+      lastName,
+      phoneNumber,
+      email,
+      track,
+      levelOfExperience,
+      reasonForJoining,
+      goals,
+      location,
+      availability,
+    } = req.body;
 
-//     // Validate user data
-//     if (!email || !isValidEmailAddress(email))
-//       // #swagger.responses[400] = {description: 'Bad request - Missing or invalid data', schema: {error: 'Invalid email address', details: "If more info is available it will be here."}}
-//       return errorResponse(res, 400, "Invalid email address");
-//     // Validate user data
-//     if (!firstName || !lastName)
-//       return errorResponse(res, 400, "Please fill in your name.");
-//     if (!phoneNumber)
-//       return errorResponse(res, 400, "Please fill in your Phone number.");
-//     if (!track) return errorResponse(res, 400, "Please select a track.");
-//     if (!levelOfExperience)
-//       return errorResponse(res, 400, "Please select a level of experience.");
+    // Validate user data
+    if (!email || !isValidEmailAddress(email))
+      // #swagger.responses[400] = {description: 'Bad request - Missing or invalid data', schema: {error: 'Invalid email address', details: "If more info is available it will be here."}}
+      return errorResponse(res, 400, "Invalid email address");
+    // Validate user data
+    if (!firstName || !lastName)
+      return errorResponse(res, 400, "Please fill in your name.");
+    if (!phoneNumber)
+      return errorResponse(res, 400, "Please fill in your Phone number.");
+    if (!track) return errorResponse(res, 400, "Please select a track.");
+    if (!levelOfExperience)
+      return errorResponse(res, 400, "Please select a level of experience.");
 
-//     // const bootcampReg =
+    const bootcampReg = await prisma.bootcampApplication.create({
+      data: {
+        FirstName: firstName,
+        lastName,
+        phoneNumber,
+        email,
+        track,
+        levelOfExperience,
+        reasonForJoining,
+        goals,
+        location,
+        availability,
+      },
+    });
 
-//     // Send mail
-//     const response = await sendMail(
-//       email,
-//       `${"reg"}`,
-//       "bootcamp_registeration",
-//       { firstName: attendee.user.first_name }
-//     );
-//     if (response.rejected.includes(email))
-//       // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
-//       return errorResponse(
-//         res,
-//         403,
-//         "Failed to deliver the email to the recipient. Please check the email address."
-//       );
+    // Send mail
+    const response = await sendMail(
+      email,
+      `BlockchainUNN Bootcamp Registeration`,
+      "bootcamp_registeration",
+      { firstName: bootcampReg.FirstName, track: bootcampReg.track }
+    );
+    if (response.rejected.includes(email))
+      // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
+      return errorResponse(
+        res,
+        403,
+        "Failed to deliver the email to the recipient. Please check the email address."
+      );
 
-//     if (response.accepted.includes(email))
-//       // #swagger.responses[201] = {description: 'User successfully registered for event.', schema: {message: 'Successful Registration. Confirmation mail has been sent to email address.', data: {details: "If more info is available it will be here."}}}
-//       return successResponse(
-//         res,
-//         201,
-//         "Successful Registration. Confirmation mail has been sent to email address"
-//       );
-//   } catch (error) {
-//     // Handle error
-//     // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
-//     return errorResponse(res, 500, "Internal Error", { details: error });
-//   }
-// };
+    if (response.accepted.includes(email))
+      // #swagger.responses[201] = {description: 'User successfully registered for event.', schema: {message: 'Successful Registration. Confirmation mail has been sent to email address.', data: {details: "If more info is available it will be here."}}}
+      return successResponse(
+        res,
+        201,
+        "Successful Registration. Confirmation mail has been sent to email address"
+      );
+  } catch (error) {
+    // Handle error
+    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+    return errorResponse(res, 500, "Internal Error", { details: error });
+  }
+};
 
-// export default {
-//   register,
-// };
+export default { register };
