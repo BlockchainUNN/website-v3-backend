@@ -34,6 +34,8 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return (0, responseHandlers_1.errorResponse)(res, 400, "Please select a track.");
         if (!levelOfExperience)
             return (0, responseHandlers_1.errorResponse)(res, 400, "Please select a level of experience.");
+        if (yield client_1.default.bootcampApplication.findUnique({ where: { email } }))
+            return (0, responseHandlers_1.errorResponse)(res, 400, "User with this email already registered for the bootcamp.");
         const bootcampReg = yield client_1.default.bootcampApplication.create({
             data: {
                 FirstName: firstName,
@@ -49,7 +51,8 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
         });
         // Send mail
-        const response = yield (0, mailHandler_1.sendMail)(email, `BlockchainUNN Bootcamp Registeration`, "bootcamp_registeration", { firstName: bootcampReg.FirstName, track: bootcampReg.track });
+        const response = yield (0, mailHandler_1.sendMail)(email, `BlockchainUNN Bootcamp Registeration`, "bootcamp_registeration", {} // { firstName: bootcampReg.FirstName, track: bootcampReg.track }
+        );
         if (response.rejected.includes(email))
             // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
             return (0, responseHandlers_1.errorResponse)(res, 403, "Failed to deliver the email to the recipient. Please check the email address.");
@@ -58,6 +61,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return (0, responseHandlers_1.successResponse)(res, 201, "Successful Registration. Confirmation mail has been sent to email address");
     }
     catch (error) {
+        console.log(error);
         // Handle error
         // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });

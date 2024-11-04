@@ -34,6 +34,13 @@ const register = async (req: Request, res: Response) => {
     if (!levelOfExperience)
       return errorResponse(res, 400, "Please select a level of experience.");
 
+    if (await prisma.bootcampApplication.findUnique({ where: { email } }))
+      return errorResponse(
+        res,
+        400,
+        "User with this email already registered for the bootcamp."
+      );
+
     const bootcampReg = await prisma.bootcampApplication.create({
       data: {
         FirstName: firstName,
@@ -54,7 +61,7 @@ const register = async (req: Request, res: Response) => {
       email,
       `BlockchainUNN Bootcamp Registeration`,
       "bootcamp_registeration",
-      { firstName: bootcampReg.FirstName, track: bootcampReg.track }
+      {} // { firstName: bootcampReg.FirstName, track: bootcampReg.track }
     );
     if (response.rejected.includes(email))
       // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
@@ -72,6 +79,8 @@ const register = async (req: Request, res: Response) => {
         "Successful Registration. Confirmation mail has been sent to email address"
       );
   } catch (error) {
+    console.log(error);
+
     // Handle error
     // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
     return errorResponse(res, 500, "Internal Error", { details: error });
