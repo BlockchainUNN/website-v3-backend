@@ -6,5 +6,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const bootcamp_controller_1 = __importDefault(require("../../controllers/bootcamp/bootcamp.controller"));
 const bootcampRoutes = (0, express_1.Router)();
-bootcampRoutes.get("/bootcamp/registerations", bootcamp_controller_1.default.register);
+bootcampRoutes.post("/bootcamp/registerations", bootcamp_controller_1.default.register);
 exports.default = bootcampRoutes;
