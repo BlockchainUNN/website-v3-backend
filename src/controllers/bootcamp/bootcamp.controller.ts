@@ -59,11 +59,16 @@ const register = async (req: Request, res: Response) => {
     });
 
     // Send mail
+    const bootcampMail = bootcampReg.track.toLowerCase().includes("content")
+      ? "content_bootcamp_registeration"
+      : bootcampReg.track.toLowerCase().includes("2")
+      ? "web2_bootcamp_registeration"
+      : "web3_bootcamp_registeration";
     const response = await sendMail(
       email,
       `BlockchainUNN Bootcamp Registeration`,
-      "bootcamp_registeration",
-      {} // { firstName: bootcampReg.FirstName, track: bootcampReg.track }
+      bootcampMail,
+      { firstName: bootcampReg.FirstName }
     );
     if (response.rejected.includes(email))
       // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
