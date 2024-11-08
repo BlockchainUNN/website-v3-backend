@@ -20,7 +20,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // #swagger.tags = ['Bootcamp']
     // #swagger.summary = "Endpoint for registering for an the bootcamp"
     try {
-        const { firstName, lastName, phoneNumber, email, track, levelOfExperience, reasonForJoining, goals, location, availability, } = req.body;
+        const { firstName, lastName, phoneNumber, email, track, levelOfExperience, goals, gender, student, location, availability, } = req.body;
         // Validate user data
         if (!email || !(0, validationHandlers_1.isValidEmailAddress)(email))
             // #swagger.responses[400] = {description: 'Bad request - Missing or invalid data', schema: {error: 'Invalid email address', details: "If more info is available it will be here."}}
@@ -44,7 +44,8 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 email,
                 track,
                 levelOfExperience,
-                reasonForJoining,
+                gender,
+                student,
                 goals,
                 location,
                 availability,
