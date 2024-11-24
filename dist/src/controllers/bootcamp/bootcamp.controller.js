@@ -24,12 +24,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { firstName, lastName, phoneNumber, email, track, levelOfExperience, goals, gender, student, location, availability, } = req.body;
         // Registration ends at 7:30pm UTC+1 24th Nov 2024
         const currentTime = luxon_1.DateTime.now().setZone("UTC+1");
-        const targetTime = currentTime.set({
-            hour: 19,
-            minute: 30,
-            second: 0,
-            millisecond: 0,
-        });
+        const targetTime = luxon_1.DateTime.fromObject({ year: 2024, month: 11, day: 24, hour: 19, minute: 30 }, { zone: "UTC+1" });
         if (currentTime > targetTime) {
             return (0, responseHandlers_1.errorResponse)(res, 400, "Registration for the bootcamp has ended. Thank you for your interest!");
         }
