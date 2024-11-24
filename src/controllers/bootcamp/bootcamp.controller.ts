@@ -7,6 +7,7 @@ import {
 } from "../../utils/responseHandlers";
 import prisma from "../../../prisma/client";
 import { sendMail } from "../../utils/mailHandler";
+import { DateTime } from "luxon";
 
 const register = async (req: Request, res: Response) => {
   // #swagger.tags = ['Bootcamp']
@@ -25,6 +26,22 @@ const register = async (req: Request, res: Response) => {
       location,
       availability,
     } = req.body;
+
+    // Registration ends at 7:30pm UTC+1 24th Nov 2024
+    const currentTime = DateTime.now().setZone("UTC+1");
+    const targetTime = currentTime.set({
+      hour: 19,
+      minute: 30,
+      second: 0,
+      millisecond: 0,
+    });
+    if (currentTime > targetTime) {
+      return errorResponse(
+        res,
+        400,
+        "Registration for the bootcamp has ended. Thank you for your interest!"
+      );
+    }
 
     // Validate user data
     if (!email || !isValidEmailAddress(email))

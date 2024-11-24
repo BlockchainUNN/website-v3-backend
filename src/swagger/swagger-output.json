@@ -1898,10 +1898,13 @@
                 "levelOfExperience": {
                   "example": "any"
                 },
-                "reasonForJoining": {
+                "goals": {
                   "example": "any"
                 },
-                "goals": {
+                "gender": {
+                  "example": "any"
+                },
+                "student": {
                   "example": "any"
                 },
                 "location": {
@@ -1977,6 +1980,44 @@
               }
             }
           },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                },
+                "details": {
+                  "type": "string",
+                  "example": "If more info is available it will be here."
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/bootcamp/download-csv/{track}": {
+      "get": {
+        "tags": [
+          "Bootcamp"
+        ],
+        "summary": "Endpoint for   Bootcamp Registeration details",
+        "description": "",
+        "parameters": [
+          {
+            "name": "track",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
           "500": {
             "description": "Internal server error",
             "schema": {
