@@ -243,7 +243,7 @@ model BootcampApplication {
   track             String   // Enum recommendation: "Web2", "Web3", "Content"
   levelOfExperience String   // Consider enum options like "Beginner", "Intermediate", "Advanced"
   reasonForJoining  String?
-  gender            String?
+  gender            String? 
   student           String?
   goals             String
   createdAt         DateTime @default(now())

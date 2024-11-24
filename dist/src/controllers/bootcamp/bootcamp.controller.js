@@ -72,4 +72,26 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
     }
 });
-exports.default = { register };
+const download = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // #swagger.tags = ['Bootcamp']
+    // #swagger.summary = 'Endpoint for downloading Bootcamp Registeration details'
+    var _a;
+    try {
+        const track = (_a = req.params) === null || _a === void 0 ? void 0 : _a.track;
+        // Get teams
+        const details = yield client_1.default.bootcampApplication.findMany({
+            where: { track },
+        });
+        // const data = details.map((detail) => {
+        //   return {};
+        // });
+        return (0, responseHandlers_1.cvsResponse)(res, 200, `BootcampRegDetails-${track}`, details);
+    }
+    catch (error) {
+        // Handle error
+        console.log(error);
+        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
+    }
+});
+exports.default = { register, download };

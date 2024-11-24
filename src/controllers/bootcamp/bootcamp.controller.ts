@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { isValidEmailAddress } from "../../utils/validationHandlers";
-import { errorResponse, successResponse } from "../../utils/responseHandlers";
+import {
+  cvsResponse,
+  errorResponse,
+  successResponse,
+} from "../../utils/responseHandlers";
 import prisma from "../../../prisma/client";
 import { sendMail } from "../../utils/mailHandler";
 
@@ -94,4 +98,30 @@ const register = async (req: Request, res: Response) => {
   }
 };
 
-export default { register };
+const download = async (req: Request, res: Response) => {
+  // #swagger.tags = ['Bootcamp']
+  // #swagger.summary = 'Endpoint for downloading Bootcamp Registeration details'
+
+  try {
+    const track = req.params?.track;
+
+    // Get teams
+    const details = await prisma.bootcampApplication.findMany({
+      where: { track },
+    });
+
+    // const data = details.map((detail) => {
+    //   return {};
+    // });
+
+    return cvsResponse(res, 200, `BootcampRegDetails-${track}`, details);
+  } catch (error) {
+    // Handle error
+    console.log(error);
+
+    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+    return errorResponse(res, 500, "Internal Error", { details: error });
+  }
+};
+
+export default { register, download };
