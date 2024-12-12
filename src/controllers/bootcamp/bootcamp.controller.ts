@@ -28,18 +28,18 @@ const register = async (req: Request, res: Response) => {
     } = req.body;
 
     // Registration ends at 7:30pm UTC+1 24th Nov 2024
-    // const currentTime = DateTime.now().setZone("UTC+1");
-    // const targetTime = DateTime.fromObject(
-    //   { year: 2024, month: 11, day: 24, hour: 19, minute: 30 },
-    //   { zone: "UTC+1" }
-    // );
-    // if (currentTime > targetTime) {
-    //   return errorResponse(
-    //     res,
-    //     400,
-    //     "Registration for the bootcamp has ended. Thank you for your interest!"
-    //   );
-    // }
+    const currentTime = DateTime.now().setZone("UTC+1");
+    const targetTime = DateTime.fromObject(
+      { year: 2024, month: 11, day: 24, hour: 19, minute: 30 },
+      { zone: "UTC+1" }
+    );
+    if (currentTime > targetTime) {
+      return errorResponse(
+        res,
+        400,
+        "Registration for the bootcamp has ended. Thank you for your interest!"
+      );
+    }
 
     // Validate user data
     if (!email || !isValidEmailAddress(email))
