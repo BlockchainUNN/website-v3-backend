@@ -16,18 +16,24 @@ const validationHandlers_1 = require("../../utils/validationHandlers");
 const responseHandlers_1 = require("../../utils/responseHandlers");
 const client_1 = __importDefault(require("../../../prisma/client"));
 const mailHandler_1 = require("../../utils/mailHandler");
-const luxon_1 = require("luxon");
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // #swagger.tags = ['Bootcamp']
     // #swagger.summary = "Endpoint for registering for an the bootcamp"
     try {
         const { firstName, lastName, phoneNumber, email, track, levelOfExperience, goals, gender, student, location, availability, } = req.body;
         // Registration ends at 7:30pm UTC+1 24th Nov 2024
-        const currentTime = luxon_1.DateTime.now().setZone("UTC+1");
-        const targetTime = luxon_1.DateTime.fromObject({ year: 2024, month: 11, day: 24, hour: 19, minute: 30 }, { zone: "UTC+1" });
-        if (currentTime > targetTime) {
-            return (0, responseHandlers_1.errorResponse)(res, 400, "Registration for the bootcamp has ended. Thank you for your interest!");
-        }
+        // const currentTime = DateTime.now().setZone("UTC+1");
+        // const targetTime = DateTime.fromObject(
+        //   { year: 2024, month: 11, day: 24, hour: 19, minute: 30 },
+        //   { zone: "UTC+1" }
+        // );
+        // if (currentTime > targetTime) {
+        //   return errorResponse(
+        //     res,
+        //     400,
+        //     "Registration for the bootcamp has ended. Thank you for your interest!"
+        //   );
+        // }
         // Validate user data
         if (!email || !(0, validationHandlers_1.isValidEmailAddress)(email))
             // #swagger.responses[400] = {description: 'Bad request - Missing or invalid data', schema: {error: 'Invalid email address', details: "If more info is available it will be here."}}
