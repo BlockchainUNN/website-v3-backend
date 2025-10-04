@@ -1,212 +1,553 @@
+// src/controllers/users/users.controllers.ts
+
 import { Request, Response } from "express";
-import prisma from "../../../prisma/client";
-import { errorResponse, successResponse } from "../../utils/responseHandlers";
 import {
-  isValidEmailAddress,
-  isValidPhoneNumber,
-} from "../../utils/validationHandlers";
+  successResponse,
+  paginatedResponse,
+  createdResponse,
+} from "../../lib/response";
+import { calculatePagination } from "../../lib/response";
 import { uploadSingleImage } from "../../utils/imageUploadHandler";
-import { FileType } from "../../types/files.types";
-import { sendMail } from "../../utils/mailHandler";
+import { Permission } from "../../types/api.types";
+import { hasPermission } from "../../lib/permissions";
+import prisma from "../../../prisma/client";
+import bcrypt from "bcrypt";
+import { AppError } from "../../lib/error";
+import { generateTokens } from "../../middlewares/auth";
+import { asyncHandler } from "../../middlewares/errorHandler";
+import {
+  GetUsersQuery,
+  CreateUserInput,
+  UpdateUserInput,
+  AdminRegistrationInput,
+  LoginUserInput,
+} from "../../schema/user.schema";
+import { User } from "@prisma/client";
 
-const create = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Users']
-  // #swagger.summary = "Endpoint for creating/adding members to the community"
-  try {
-    /* 
-        #swagger.consumes = ['multipart/form-data']  
-        #swagger.parameters['email'] = { in: 'formData', required: 'true'} 
-        #swagger.parameters['firstName'] = { in: 'formData', required: 'true'} 
-        #swagger.parameters['lastName'] = { in: 'formData', required: 'true'} 
-        #swagger.parameters['techSkills'] = { in: 'formData', required: 'true', description: 'Comma Seperated list of skills user is intrested in.'} 
-        #swagger.parameters['phoneNumber'] = { in: 'formData'} 
-        #swagger.parameters['gender'] = { in: 'formData'} 
-        #swagger.parameters['profilePic'] = { in: 'formData', type: 'file'} 
-    */
-    let { email, firstName, lastName, techSkills, phoneNumber, gender } =
-      req.body;
-    const profilePic: FileType | undefined = req.file;
-    let profilePic_db, uploadedImage: { url: string; public_id: string };
+/**
+ * Get all users with pagination and filtering
+ * @route GET /api/v3/users
+ * @access Admin only
+ */
+export const getUsers = asyncHandler(async (req: Request, res: Response) => {
+  const query = req.query as GetUsersQuery;
+  const {
+    page = 1,
+    limit = 10,
+    search,
+    role,
+    sortBy = "created_at",
+    sortOrder = "desc",
+  } = query;
 
-    // Validate user data
-    if (!firstName || !lastName)
-      return errorResponse(res, 400, "First name and Last name are required.");
-    if (!email || !isValidEmailAddress(email))
-      /* 
-          #swagger.responses[400] = {description: 'Bad request - Missing or invalid credentials', schema: {error: 'Invalid email address', data: {details: "If more info is available it will be here."}}} 
-       */
-      return errorResponse(res, 400, "Invalid email address");
+  // Build where clause for filtering
+  const where: any = {};
 
-    if (phoneNumber && !isValidPhoneNumber(phoneNumber))
-      return errorResponse(
-        res,
-        400,
-        "Invalid phone number. Please start with a country code."
-      );
-    if (gender.toLowerCase() === "male") {
-      gender = "male";
-    } else if (gender.toLowerCase() === "female") {
-      gender = "female";
-    } else {
-      gender = null;
-    }
+  if (search) {
+    where.OR = [
+      { first_name: { contains: search, mode: "insensitive" } },
+      { last_name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+  }
 
-    // Mapping tech skills to comunities
-    const techSkillsArr = String(techSkills).toLowerCase().split(",");
-    let subCommunities: string[] = [];
-    if (techSkillsArr.includes("programming"))
-      subCommunities = [...subCommunities, "developer"];
-    if (
-      techSkillsArr.includes("designing") ||
-      techSkills.includes("product management")
-    )
-      subCommunities = [...subCommunities, "design"];
-    if (
-      techSkillsArr.includes("copywriting") ||
-      techSkillsArr.includes("marketing") ||
-      techSkillsArr.includes("community management") ||
-      techSkills.includes("product management")
-    )
-      subCommunities = [...subCommunities, "content"];
+  if (role) {
+    where.roles = { role: role };
+  }
 
-    // Check if user with email exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email },
+  // Get total count for pagination
+  const total = await prisma.user.count({ where });
+
+  // Get users with pagination
+  const users = await prisma.user.findMany({
+    where,
+    include: {
+      roles: true,
+      _count: {
+        select: {
+          eventAttendee: true,
+          event: true,
+        },
+      },
+    },
+    orderBy: { [sortBy]: sortOrder },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
+
+  // Transform users for response
+  const transformedUsers = users.map((user: any) => ({
+    id: user.id,
+    uid: user.uid,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    email: user.email,
+    role: user.roles?.role || "user",
+    subCommunity: user.sub_community,
+    techSkills: user.tech_skills,
+    phoneNumber: user.phone_number,
+    gender: user.gender,
+    profilePicId: user.profile_pic,
+    createdAt: user.created_at,
+    updatedAt: user.updated_at,
+    stats: {
+      eventsAttended: user._count.eventAttendee,
+      eventsHosted: user._count.event,
+    },
+  }));
+
+  const pagination = calculatePagination({ total, page, limit });
+
+  return paginatedResponse(res, transformedUsers, pagination);
+});
+
+/**
+ * Get user by ID
+ * @route GET /api/v3/users/:id
+ * @access Admin or Owner
+ */
+export const getUserById = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = parseInt(id);
+
+  if (isNaN(userId)) {
+    throw AppError.badRequest("Invalid user ID");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      roles: true,
+      eventAttendee: {
+        include: {
+          event: {
+            select: {
+              id: true,
+              uid: true,
+              name: true,
+              start_date: true,
+              end_date: true,
+            },
+          },
+        },
+      },
+      event: {
+        select: {
+          id: true,
+          uid: true,
+          name: true,
+          start_date: true,
+          end_date: true,
+          attendees_count: true,
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    throw AppError.userNotFound(userId);
+  }
+
+  // Check if user can access this profile
+  const canAccess =
+    req.user?.id === userId ||
+    hasPermission(req.user!.role, Permission.READ_USER);
+
+  if (!canAccess) {
+    throw AppError.forbidden("Cannot access this user profile");
+  }
+
+  // Get profile picture if exists
+  let profilePicture = null;
+  if (user.profile_pic) {
+    const image = await prisma.image.findUnique({
+      where: { id: user.profile_pic },
+      select: { image_url: true, name: true },
     });
-    if (existingUser) {
-      // Todo: Update this with the proper email.
-      const response = await sendMail(email, "Welcome Back", "onboarding", {});
-      if (response.rejected.includes(email))
-        // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
-        return errorResponse(
-          res,
-          403,
-          "Failed to deliver the email to the recipient. Please check the email address."
-        );
+    profilePicture = image;
+  }
 
-      if (response.accepted.includes(email))
-        // #swagger.responses[200] = {description: 'Existing User', schema: {message: 'Email address associated with an existing community member. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
-        return successResponse(
-          res,
-          200,
-          "Email address associated with an existing community member. Community Links have been sent to email address."
-        );
-    }
+  const transformedUser = {
+    id: user.id,
+    uid: user.uid,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    email: user.email,
+    role: user.roles?.role || "user",
+    subCommunity: user.sub_community,
+    techSkills: user.tech_skills,
+    phoneNumber: user.phone_number,
+    gender: user.gender,
+    profilePicture,
+    createdAt: user.created_at,
+    updatedAt: user.updated_at,
+    eventsAttended: user.eventAttendee.map((ea: { event: any }) => ea.event),
+    eventsHosted: user.event,
+  };
 
-    // Handle image upload
-    if (profilePic) {
+  return successResponse(res, transformedUser);
+});
+
+/**
+ * Create new user (public registration)
+ * @route POST /api/v3/users
+ * @access Public
+ */
+export const createUser = asyncHandler(async (req: Request, res: Response) => {
+  const userData = req.body as CreateUserInput;
+  const profilePic = req.file;
+
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: userData.email },
+  });
+
+  if (existingUser) {
+    throw AppError.emailAlreadyExists(userData.email);
+  }
+
+  // Handle profile picture upload
+  let uploadedImage = null;
+  let profilePicRecord = null;
+
+  if (profilePic) {
+    try {
       uploadedImage = await uploadSingleImage(profilePic);
-      profilePic_db = await prisma.image.create({
+      profilePicRecord = await prisma.image.create({
         data: {
-          name: `${firstName} ${lastName} Profile Picture`,
+          name: `${userData.firstName} ${userData.lastName} Profile Picture`,
           image_url: uploadedImage.url,
           public_id: uploadedImage.public_id,
         },
       });
+    } catch (error) {
+      throw AppError.fileUploadError("Failed to upload profile picture", error);
     }
+  }
 
-    // Add user to database
-    const newUser = await prisma.user.create({
-      data: {
-        email: email,
-        first_name: firstName,
-        last_name: lastName,
-        sub_community: subCommunities,
-        tech_skills: techSkillsArr,
-        phone_number: phoneNumber,
-        gender: gender,
-        profile_pic: profilePic_db?.id,
-      },
+  // Create user
+  const newUser = await prisma.user.create({
+    data: {
+      email: userData.email,
+      first_name: userData.firstName,
+      last_name: userData.lastName,
+      sub_community:
+        userData.subCommunities !== undefined
+          ? userData.subCommunities
+          : undefined,
+      tech_skills:
+        userData.techSkills !== undefined ? userData.techSkills : undefined,
+      phone_number: userData.phoneNumber || null,
+      gender: userData.gender || null,
+      profile_pic: profilePicRecord?.id || null,
+    },
+    include: {
+      roles: true,
+    },
+  });
+
+  const responseData = {
+    id: newUser.id,
+    uid: newUser.uid,
+    firstName: newUser.first_name,
+    lastName: newUser.last_name,
+    email: newUser.email,
+    subCommunity: newUser.sub_community,
+    techSkills: newUser.tech_skills,
+    phoneNumber: newUser.phone_number,
+    gender: newUser.gender,
+    profilePicture: profilePicRecord
+      ? {
+          url: profilePicRecord.image_url,
+          name: profilePicRecord.name,
+        }
+      : null,
+    createdAt: newUser.created_at,
+  };
+
+  return createdResponse(
+    res,
+    responseData,
+    `/api/v3/users/${newUser.id}`,
+    "User registered successfully"
+  );
+});
+
+/**
+ * Update user
+ * @route PUT /api/v3/users/:id
+ * @access Admin or Owner
+ */
+export const updateUser = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = parseInt(id);
+  const updateData = req.body as UpdateUserInput;
+  const profilePic = req.file;
+
+  if (isNaN(userId)) {
+    throw AppError.badRequest("Invalid user ID");
+  }
+
+  // Check if user exists
+  const existingUser = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { roles: true },
+  });
+
+  if (!existingUser) {
+    throw AppError.userNotFound(userId);
+  }
+
+  // Check permissions
+  const canUpdate =
+    req.user?.id === userId ||
+    hasPermission(req.user!.role, Permission.UPDATE_USER);
+
+  if (!canUpdate) {
+    throw AppError.forbidden("Cannot update this user");
+  }
+
+  // If email is being updated, check for conflicts
+  if (updateData.email && updateData.email !== existingUser.email) {
+    const emailExists = await prisma.user.findUnique({
+      where: { email: updateData.email },
     });
 
-    // TODO: Un comment this when the mail is ready
-    // const response = await sendMail(
-    //   email,
-    //   "Welcome To BlockchainUNN",
-    //   "onboarding",
-    //   {}
-    // );
-    // if (response.rejected.includes(email))
-    //   return errorResponse(
-    //     res,
-    //     403,
-    //     "Failed to deliver the email to the recipient. Please check the email address."
-    //   );
-
-    // // Return User
-    // if (response.accepted.includes(email))
-    // #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
-    return successResponse(
-      res,
-      201,
-      "Successful Registration. Community Links have been sent to email address.",
-      {
-        email: newUser.email,
-        firstName: newUser.first_name,
-        lastName: newUser.last_name,
-        subCommunity: newUser.sub_community,
-        techSkills: newUser.tech_skills,
-        phoneNumber,
-        gender,
-        uid: newUser.uid,
-        profilePic: profilePic_db?.image_url,
-      }
-    );
-  } catch (error) {
-    // Handle error
-    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
-    return errorResponse(res, 500, "Internal Error", { details: error });
+    if (emailExists) {
+      throw AppError.emailAlreadyExists(updateData.email);
+    }
   }
-};
 
-const getUsers = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Users']
-  // #swagger.summary = 'Endpoint for getting list of users'
-  // #swagger.security = [{"apiKeyAuth": []}]
-
-  try {
-    //to fetch all users
-    const users = await prisma.user.findMany();
-
-    // #swagger.responses[200] = {description: 'Get list of users', schema: {message: 'user retrived successfully', data: {details: "If more info is available it will be here."}}}
-    return successResponse(res, 200, "user retrieved successfully", users);
-  } catch (error) {
-    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
-    return errorResponse(
-      res,
-      500,
-      "An error occurred while fetching users",
-      error
-    );
+  // Handle profile picture upload
+  let profilePicRecord = null;
+  if (profilePic) {
+    try {
+      const uploadedImage = await uploadSingleImage(profilePic);
+      profilePicRecord = await prisma.image.create({
+        data: {
+          name: `${updateData.firstName || existingUser.first_name} ${
+            updateData.lastName || existingUser.last_name
+          } Profile Picture`,
+          image_url: uploadedImage.url,
+          public_id: uploadedImage.public_id,
+        },
+      });
+    } catch (error) {
+      throw AppError.fileUploadError("Failed to upload profile picture", error);
+    }
   }
-};
 
-const getUserDetails = async (req: Request, res: Response) => {
-  // #swagger.tags = ['Users']
-  // #swagger.summary = 'Get User details'
-  // #swagger.parameters['email'] = { in: 'path', required: 'true'}
-  const { email } = req.params;
-  try {
-    const user = await prisma.user.findUnique({
+  // Update user
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(updateData.firstName && { first_name: updateData.firstName }),
+      ...(updateData.lastName && { last_name: updateData.lastName }),
+      ...(updateData.email && { email: updateData.email }),
+      ...(updateData.phoneNumber !== undefined && {
+        phone_number: updateData.phoneNumber,
+      }),
+      ...(updateData.gender && { gender: updateData.gender }),
+      ...(updateData.subCommunities && {
+        sub_community: updateData.subCommunities,
+      }),
+      ...(updateData.techSkills && { tech_skills: updateData.techSkills }),
+      ...(profilePicRecord && { profile_pic: profilePicRecord.id }),
+    },
+    include: {
+      roles: true,
+    },
+  });
+
+  // Get profile picture
+  let profilePicture = null;
+  if (updatedUser.profile_pic) {
+    const image = await prisma.image.findUnique({
+      where: { id: updatedUser.profile_pic },
+      select: { image_url: true, name: true },
+    });
+    profilePicture = image;
+  }
+
+  const responseData = {
+    id: updatedUser.id,
+    uid: updatedUser.uid,
+    firstName: updatedUser.first_name,
+    lastName: updatedUser.last_name,
+    email: updatedUser.email,
+    role: updatedUser.roles?.role || "user",
+    subCommunity: updatedUser.sub_community,
+    techSkills: updatedUser.tech_skills,
+    phoneNumber: updatedUser.phone_number,
+    gender: updatedUser.gender,
+    profilePicture,
+    updatedAt: updatedUser.updated_at,
+  };
+
+  return successResponse(res, responseData, 200, "User updated successfully");
+});
+
+/**
+ * Delete user
+ * @route DELETE /api/v3/users/:id
+ * @access Admin only
+ */
+export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = parseInt(id);
+
+  if (isNaN(userId)) {
+    throw AppError.badRequest("Invalid user ID");
+  }
+
+  // Prevent self-deletion
+  if (req.user?.id === userId) {
+    throw AppError.badRequest("Cannot delete your own account");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw AppError.userNotFound(userId);
+  }
+
+  // Delete user (this will cascade to related records based on schema)
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+
+  return successResponse(res, { id: userId }, 200, "User deleted successfully");
+});
+
+/**
+ * Admin registration with role assignment
+ * @route POST /api/v3/admin/register
+ * @access Superadmin only
+ */
+export const registerAdmin = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { firstName, lastName, email, password } =
+      req.body as AdminRegistrationInput;
+    const role = "superadmin";
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) {
-      // #swagger.responses[404] = {description: 'User not found', schema: {error: 'User not found', data: {details: "If more info is available it will be here."}}}
-      return errorResponse(res, 404, "User not found");
+    if (existingUser) {
+      throw AppError.emailAlreadyExists(email);
     }
 
-    // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: 'User details retrieved succesfully', data: {details: "If more info is available it will be here."}}}
-    return successResponse(
-      res,
-      200,
-      "User details retrieved succesfully",
-      user
-    );
-  } catch (error) {
-    // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
-    errorResponse(res, 500, "An Error occured fetching user details", error);
-  }
-};
+    // Get or create role
+    let userRole = await prisma.role.findUnique({
+      where: { role },
+    });
 
-export default { getUsers, getUserDetails, create };
+    if (!userRole) {
+      userRole = await prisma.role.create({
+        data: { role },
+      });
+    }
+
+    // Hash password
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create admin user
+    const newAdmin = await prisma.user.create({
+      data: {
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        hashed_password: hashedPassword,
+        roleId: userRole.id,
+      },
+      include: {
+        roles: true,
+      },
+    });
+
+    // Generate tokens
+    const tokens = generateTokens(newAdmin);
+
+    const responseData = {
+      user: {
+        id: newAdmin.id,
+        uid: newAdmin.uid,
+        firstName: newAdmin.first_name,
+        lastName: newAdmin.last_name,
+        email: newAdmin.email,
+        role: newAdmin.roles?.role,
+        createdAt: newAdmin.created_at,
+      },
+      tokens,
+    };
+
+    return createdResponse(
+      res,
+      responseData,
+      `/api/v3/users/${newAdmin.id}`,
+      "Admin account created successfully"
+    );
+  }
+);
+
+/**
+ * User login
+ * @route POST /api/v3/auth/login
+ * @access Public
+ */
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body as LoginUserInput;
+
+  // Find user with password
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: { roles: true },
+  });
+
+  if (!user || !user.hashed_password) {
+    throw AppError.invalidCredentials();
+  }
+
+  // Verify password
+  const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
+
+  if (!isPasswordValid) {
+    throw AppError.invalidCredentials();
+  }
+
+  // Generate tokens
+  const tokens = generateTokens(user);
+
+  const responseData = {
+    user: {
+      id: user.id,
+      uid: user.uid,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      role: user.roles?.role || "user",
+      subCommunity: user.sub_community,
+      techSkills: user.tech_skills,
+      phoneNumber: user.phone_number,
+      gender: user.gender,
+    },
+    tokens,
+  };
+
+  return successResponse(res, responseData, 200, "Login successful");
+});
+
+export default {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  registerAdmin,
+  loginUser,
+};
