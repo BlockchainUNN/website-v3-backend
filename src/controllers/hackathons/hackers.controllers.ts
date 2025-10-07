@@ -37,7 +37,7 @@ export const createHacker = asyncHandler(
 
     // Check if hackathon exists
     const hackathon = await prisma.hackathon.findUnique({
-      where: { unique_name: hackathonId },
+      where: { id: Number(hackathonId) },
     });
 
     if (!hackathon) {
@@ -53,11 +53,26 @@ export const createHacker = asyncHandler(
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
+      include: {
+        eventAttendee: true,
+      },
     });
+
+    // If there is a connected event, check that the user is regiatered for that event
+    if (hackathon.event_id) {
+      const isRegistered = Boolean(
+        existingUser?.eventAttendee.filter(
+          (attendee) => Number(attendee.event_id) === Number(hackathon.event_id)
+        ).length
+      );
+
+      if (!isRegistered)
+        throw AppError.notFound("Please register for the event first");
+    }
 
     if (!existingUser) {
       throw AppError.notFound(
-        "User with this email not found. Please register as a user first."
+        "User with this email not found. Please register for the event first."
       );
     }
 
