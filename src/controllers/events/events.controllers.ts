@@ -762,15 +762,41 @@ export const registerForEvent = asyncHandler(
     }
 
     // Check if event is full
-    if (event._count.eventAttendee >= event.max_attendees) {
+    if (
+      event.max_attendees > 0 &&
+      event._count.eventAttendee >= event.max_attendees
+    ) {
       throw AppError.eventFull();
+    }
+
+    // Get or create user
+    let user = await prisma.user.findFirst({
+      where: { email: registrationDetails?.email },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          first_name: registrationDetails?.firstName,
+          last_name: registrationDetails?.lastName,
+          email: registrationDetails?.email,
+          gender: registrationDetails?.gender,
+          phone_number: registrationDetails?.phoneNumber,
+        },
+      });
+    }
+
+    if (!user) {
+      throw AppError.userNotFound(
+        "Could not find or create an account for this user"
+      );
     }
 
     // Check if user is already registered
     const existingRegistration = await prisma.eventAttendee.findFirst({
       where: {
         event_id: eventId,
-        attendee_id: req.user!.id,
+        attendee_id: user!.id,
       },
     });
 
@@ -782,7 +808,7 @@ export const registerForEvent = asyncHandler(
     const registration = await prisma.eventAttendee.create({
       data: {
         event_id: eventId,
-        attendee_id: req.user!.id,
+        attendee_id: user!.id,
         registrationDetails: registrationDetails ?? undefined,
       },
     });
@@ -800,7 +826,7 @@ export const registerForEvent = asyncHandler(
     const responseData = {
       id: registration.id,
       eventId: eventId,
-      userId: req.user!.id,
+      userId: user!.id,
       registrationDetails: registration.registrationDetails,
       registeredAt: registration.id, // Using registration record creation
     };

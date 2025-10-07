@@ -97,7 +97,18 @@ export const EventRegistrationSchema = z.object({
     id: z.string().regex(/^\d+$/, "Invalid event ID"),
   }),
   body: z.object({
-    registrationDetails: z.record(z.string(), z.any()).optional(),
+    registrationDetails: z.object({
+      email: z.string().email("Invalid email address"),
+      gender: z.string(),
+      student: z.string(),
+      lastName: z.string(),
+      firstName: z.string(),
+      techCareer: z.string(),
+      phoneNumber: z.string(),
+      attendingFrom: z.string(),
+      experienceLevel: z.string(),
+      willParticipateInHackathon: z.string(),
+    }),
   }),
 });
 

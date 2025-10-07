@@ -530,7 +530,6 @@ eventRoutes.delete(
  */
 eventRoutes.post(
   "/events/:id/register",
-  authenticate,
   validate(ParamIdSchema),
   validate(EventRegistrationSchema),
   eventController.registerForEvent

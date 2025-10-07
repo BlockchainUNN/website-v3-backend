@@ -65,7 +65,7 @@ export function validate<T extends z.ZodTypeAny>(schema: T) {
         next();
       } catch (error) {
         if (error instanceof ZodError) {
-          const formattedErrors = (error as any).errors.map(
+          const formattedErrors = (error as any)?.errors?.map(
             (err: { path: any[]; message: any; input: any }) => ({
               field: err.path.join("."),
               message: err.message,
@@ -75,7 +75,7 @@ export function validate<T extends z.ZodTypeAny>(schema: T) {
 
           throw AppError.badRequest("Validation failed", {
             errors: formattedErrors,
-            invalidFields: (error as any).errors.length,
+            invalidFields: (error as any)?.errors?.length,
           });
         }
         throw error;
