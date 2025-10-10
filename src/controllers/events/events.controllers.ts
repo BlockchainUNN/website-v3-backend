@@ -19,6 +19,7 @@ import {
   EventRegistrationInput,
 } from "../../schema/event.schemas";
 import { Event } from "@prisma/client";
+import { sendMail } from "../../utils/mailHandler";
 
 /**
  * Get all events with pagination and filtering
@@ -822,6 +823,19 @@ export const registerForEvent = asyncHandler(
         },
       },
     });
+
+    // Send welcome email
+    try {
+      await sendMail(
+        user.email,
+        `${user.first_name}, Welcome to Blockathon!!!`,
+        "event_registeration",
+        { firstName: user.first_name }
+      );
+    } catch (emailError) {
+      console.warn("Failed to send welcome email:", emailError);
+      // Don't fail the registration if email fails
+    }
 
     const responseData = {
       id: registration.id,
