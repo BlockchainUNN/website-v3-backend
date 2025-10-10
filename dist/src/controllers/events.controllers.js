@@ -131,5 +131,27 @@ const getAttendee = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
     }
 });
-const events = { register, getAttendee };
+const getAttendeeCount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    // #swagger.tags = ['Events']
+    // #swagger.summary = "Endpoint for checking if someone is registered for a specific event"
+    try {
+        // #swagger.parameters['id'] = {description: "Id of the event we are checking", required: 'true'}
+        const eventId = (_a = req.params) === null || _a === void 0 ? void 0 : _a.id;
+        // Get the event
+        const attendeeCount = yield client_1.default.eventAttendee.count({
+            where: { event: { uid: eventId } },
+        });
+        if (!attendeeCount)
+            return (0, responseHandlers_1.errorResponse)(res, 404, "Event not found");
+        // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: '', data: {details: "If more info is available it will be here."}}}
+        return (0, responseHandlers_1.successResponse)(res, 200, "Successfully", { attendeeCount });
+    }
+    catch (error) {
+        // Handle error
+        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', details: "If more info is available it will be here."}}
+        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
+    }
+});
+const events = { register, getAttendee, getAttendeeCount };
 exports.default = events;

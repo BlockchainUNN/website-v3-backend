@@ -1,4 +1,5 @@
 "use strict";
+// src/controllers/users/users.controllers.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -12,166 +13,452 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = __importDefault(require("../../../prisma/client"));
-const responseHandlers_1 = require("../../utils/responseHandlers");
-const validationHandlers_1 = require("../../utils/validationHandlers");
+exports.loginUser = exports.registerAdmin = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
+const response_1 = require("../../lib/response");
+const response_2 = require("../../lib/response");
 const imageUploadHandler_1 = require("../../utils/imageUploadHandler");
-const mailHandler_1 = require("../../utils/mailHandler");
-const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // #swagger.tags = ['Users']
-    // #swagger.summary = "Endpoint for creating/adding members to the community"
-    try {
-        /*
-            #swagger.consumes = ['multipart/form-data']
-            #swagger.parameters['email'] = { in: 'formData', required: 'true'}
-            #swagger.parameters['firstName'] = { in: 'formData', required: 'true'}
-            #swagger.parameters['lastName'] = { in: 'formData', required: 'true'}
-            #swagger.parameters['techSkills'] = { in: 'formData', required: 'true', description: 'Comma Seperated list of skills user is intrested in.'}
-            #swagger.parameters['phoneNumber'] = { in: 'formData'}
-            #swagger.parameters['gender'] = { in: 'formData'}
-            #swagger.parameters['profilePic'] = { in: 'formData', type: 'file'}
-        */
-        let { email, firstName, lastName, techSkills, phoneNumber, gender } = req.body;
-        const profilePic = req.file;
-        let profilePic_db, uploadedImage;
-        // Validate user data
-        if (!firstName || !lastName)
-            return (0, responseHandlers_1.errorResponse)(res, 400, "First name and Last name are required.");
-        if (!email || !(0, validationHandlers_1.isValidEmailAddress)(email))
-            /*
-                #swagger.responses[400] = {description: 'Bad request - Missing or invalid credentials', schema: {error: 'Invalid email address', data: {details: "If more info is available it will be here."}}}
-             */
-            return (0, responseHandlers_1.errorResponse)(res, 400, "Invalid email address");
-        if (phoneNumber && !(0, validationHandlers_1.isValidPhoneNumber)(phoneNumber))
-            return (0, responseHandlers_1.errorResponse)(res, 400, "Invalid phone number. Please start with a country code.");
-        if (gender.toLowerCase() === "male") {
-            gender = "male";
-        }
-        else if (gender.toLowerCase() === "female") {
-            gender = "female";
-        }
-        else {
-            gender = null;
-        }
-        // Mapping tech skills to comunities
-        const techSkillsArr = String(techSkills).toLowerCase().split(",");
-        let subCommunities = [];
-        if (techSkillsArr.includes("programming"))
-            subCommunities = [...subCommunities, "developer"];
-        if (techSkillsArr.includes("designing") ||
-            techSkills.includes("product management"))
-            subCommunities = [...subCommunities, "design"];
-        if (techSkillsArr.includes("copywriting") ||
-            techSkillsArr.includes("marketing") ||
-            techSkillsArr.includes("community management") ||
-            techSkills.includes("product management"))
-            subCommunities = [...subCommunities, "content"];
-        // Check if user with email exists
-        const existingUser = yield client_1.default.user.findUnique({
-            where: { email: email },
+const api_types_1 = require("../../types/api.types");
+const permissions_1 = require("../../lib/permissions");
+const client_1 = __importDefault(require("../../../prisma/client"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const error_1 = require("../../lib/error");
+const auth_1 = require("../../middlewares/auth");
+const errorHandler_1 = require("../../middlewares/errorHandler");
+/**
+ * Get all users with pagination and filtering
+ * @route GET /api/v3/users
+ * @access Admin only
+ */
+exports.getUsers = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = req.query;
+    const { page = 1, limit = 10, search, role, sortBy = "created_at", sortOrder = "desc", } = query;
+    // Build where clause for filtering
+    const where = {};
+    if (search) {
+        where.OR = [
+            { first_name: { contains: search, mode: "insensitive" } },
+            { last_name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+        ];
+    }
+    if (role) {
+        where.roles = { role: role };
+    }
+    // Get total count for pagination
+    const total = yield client_1.default.user.count({ where });
+    // Get users with pagination
+    const users = yield client_1.default.user.findMany({
+        where,
+        include: {
+            roles: true,
+            _count: {
+                select: {
+                    eventAttendee: true,
+                    event: true,
+                },
+            },
+        },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+    });
+    // Transform users for response
+    const transformedUsers = users.map((user) => {
+        var _a;
+        return ({
+            id: user.id,
+            uid: user.uid,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            email: user.email,
+            role: ((_a = user.roles) === null || _a === void 0 ? void 0 : _a.role) || "user",
+            subCommunity: user.sub_community,
+            techSkills: user.tech_skills,
+            phoneNumber: user.phone_number,
+            gender: user.gender,
+            profilePicId: user.profile_pic,
+            createdAt: user.created_at,
+            updatedAt: user.updated_at,
+            stats: {
+                eventsAttended: user._count.eventAttendee,
+                eventsHosted: user._count.event,
+            },
         });
-        if (existingUser) {
-            // Todo: Update this with the proper email.
-            const response = yield (0, mailHandler_1.sendMail)(email, "Welcome Back", "onboarding", {});
-            if (response.rejected.includes(email))
-                // #swagger.responses[403] = {description: 'Email rejected', schema: {message: 'Failed to deliver the email to the recipient. Please check the email address.', details: "If more info is available it will be here."}}
-                return (0, responseHandlers_1.errorResponse)(res, 403, "Failed to deliver the email to the recipient. Please check the email address.");
-            if (response.accepted.includes(email))
-                // #swagger.responses[200] = {description: 'Existing User', schema: {message: 'Email address associated with an existing community member. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
-                return (0, responseHandlers_1.successResponse)(res, 200, "Email address associated with an existing community member. Community Links have been sent to email address.");
-        }
-        // Handle image upload
-        if (profilePic) {
+    });
+    const pagination = (0, response_2.calculatePagination)({ total, page, limit });
+    return (0, response_1.paginatedResponse)(res, transformedUsers, pagination);
+}));
+/**
+ * Get user by ID
+ * @route GET /api/v3/users/:id
+ * @access Admin or Owner
+ */
+exports.getUserById = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const { id } = req.params;
+    const userId = parseInt(id);
+    if (isNaN(userId)) {
+        throw error_1.AppError.badRequest("Invalid user ID");
+    }
+    const user = yield client_1.default.user.findUnique({
+        where: { id: userId },
+        include: {
+            roles: true,
+            eventAttendee: {
+                include: {
+                    event: {
+                        select: {
+                            id: true,
+                            uid: true,
+                            name: true,
+                            start_date: true,
+                            end_date: true,
+                        },
+                    },
+                },
+            },
+            event: {
+                select: {
+                    id: true,
+                    uid: true,
+                    name: true,
+                    start_date: true,
+                    end_date: true,
+                    attendees_count: true,
+                },
+            },
+        },
+    });
+    if (!user) {
+        throw error_1.AppError.userNotFound(userId);
+    }
+    // Check if user can access this profile
+    const canAccess = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) === userId ||
+        (0, permissions_1.hasPermission)(req.user.role, api_types_1.Permission.READ_USER);
+    if (!canAccess) {
+        throw error_1.AppError.forbidden("Cannot access this user profile");
+    }
+    // Get profile picture if exists
+    let profilePicture = null;
+    if (user.profile_pic) {
+        const image = yield client_1.default.image.findUnique({
+            where: { id: user.profile_pic },
+            select: { image_url: true, name: true },
+        });
+        profilePicture = image;
+    }
+    const transformedUser = {
+        id: user.id,
+        uid: user.uid,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        email: user.email,
+        role: ((_b = user.roles) === null || _b === void 0 ? void 0 : _b.role) || "user",
+        subCommunity: user.sub_community,
+        techSkills: user.tech_skills,
+        phoneNumber: user.phone_number,
+        gender: user.gender,
+        profilePicture,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at,
+        eventsAttended: user.eventAttendee.map((ea) => ea.event),
+        eventsHosted: user.event,
+    };
+    return (0, response_1.successResponse)(res, transformedUser);
+}));
+/**
+ * Create new user (public registration)
+ * @route POST /api/v3/users
+ * @access Public
+ */
+exports.createUser = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userData = req.body;
+    const profilePic = req.file;
+    // Check if user already exists
+    const existingUser = yield client_1.default.user.findUnique({
+        where: { email: userData.email },
+    });
+    if (existingUser) {
+        throw error_1.AppError.emailAlreadyExists(userData.email);
+    }
+    // Handle profile picture upload
+    let uploadedImage = null;
+    let profilePicRecord = null;
+    if (profilePic) {
+        try {
             uploadedImage = yield (0, imageUploadHandler_1.uploadSingleImage)(profilePic);
-            profilePic_db = yield client_1.default.image.create({
+            profilePicRecord = yield client_1.default.image.create({
                 data: {
-                    name: `${firstName} ${lastName} Profile Picture`,
+                    name: `${userData.firstName} ${userData.lastName} Profile Picture`,
                     image_url: uploadedImage.url,
                     public_id: uploadedImage.public_id,
                 },
             });
         }
-        // Add user to database
-        const newUser = yield client_1.default.user.create({
-            data: {
-                email: email,
-                first_name: firstName,
-                last_name: lastName,
-                sub_community: subCommunities,
-                tech_skills: techSkillsArr,
-                phone_number: phoneNumber,
-                gender: gender,
-                profile_pic: profilePic_db === null || profilePic_db === void 0 ? void 0 : profilePic_db.id,
-            },
-        });
-        // TODO: Un comment this when the mail is ready
-        // const response = await sendMail(
-        //   email,
-        //   "Welcome To BlockchainUNN",
-        //   "onboarding",
-        //   {}
-        // );
-        // if (response.rejected.includes(email))
-        //   return errorResponse(
-        //     res,
-        //     403,
-        //     "Failed to deliver the email to the recipient. Please check the email address."
-        //   );
-        // // Return User
-        // if (response.accepted.includes(email))
-        // #swagger.responses[201] = {description: 'New user created', schema: {message: 'Successful Registration. Community Links have been sent to email address.', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.successResponse)(res, 201, "Successful Registration. Community Links have been sent to email address.", {
-            email: newUser.email,
-            firstName: newUser.first_name,
-            lastName: newUser.last_name,
-            subCommunity: newUser.sub_community,
-            techSkills: newUser.tech_skills,
-            phoneNumber,
-            gender,
-            uid: newUser.uid,
-            profilePic: profilePic_db === null || profilePic_db === void 0 ? void 0 : profilePic_db.image_url,
-        });
-    }
-    catch (error) {
-        // Handle error
-        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.errorResponse)(res, 500, "Internal Error", { details: error });
-    }
-});
-const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // #swagger.tags = ['Users']
-    // #swagger.summary = 'Endpoint for getting list of users'
-    // #swagger.security = [{"apiKeyAuth": []}]
-    try {
-        //to fetch all users
-        const users = yield client_1.default.user.findMany();
-        // #swagger.responses[200] = {description: 'Get list of users', schema: {message: 'user retrived successfully', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.successResponse)(res, 200, "user retrieved successfully", users);
-    }
-    catch (error) {
-        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.errorResponse)(res, 500, "An error occurred while fetching users", error);
-    }
-});
-const getUserDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // #swagger.tags = ['Users']
-    // #swagger.summary = 'Get User details'
-    // #swagger.parameters['email'] = { in: 'path', required: 'true'}
-    const { email } = req.params;
-    try {
-        const user = yield client_1.default.user.findUnique({
-            where: { email },
-        });
-        if (!user) {
-            // #swagger.responses[404] = {description: 'User not found', schema: {error: 'User not found', data: {details: "If more info is available it will be here."}}}
-            return (0, responseHandlers_1.errorResponse)(res, 404, "User not found");
+        catch (error) {
+            throw error_1.AppError.fileUploadError("Failed to upload profile picture", error);
         }
-        // #swagger.responses[200] = {description: 'User details retrieved succesfully', schema: {message: 'User details retrieved succesfully', data: {details: "If more info is available it will be here."}}}
-        return (0, responseHandlers_1.successResponse)(res, 200, "User details retrieved succesfully", user);
     }
-    catch (error) {
-        // #swagger.responses[500] = {description: 'Internal server error', schema: {error: 'Internal server error', data: {details: "If more info is available it will be here."}}}
-        (0, responseHandlers_1.errorResponse)(res, 500, "An Error occured fetching user details", error);
+    // Create user
+    const newUser = yield client_1.default.user.create({
+        data: {
+            email: userData.email,
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            sub_community: userData.subCommunities !== undefined
+                ? userData.subCommunities
+                : undefined,
+            tech_skills: userData.techSkills !== undefined ? userData.techSkills : undefined,
+            phone_number: userData.phoneNumber || null,
+            gender: userData.gender || null,
+            profile_pic: (profilePicRecord === null || profilePicRecord === void 0 ? void 0 : profilePicRecord.id) || null,
+        },
+        include: {
+            roles: true,
+        },
+    });
+    const responseData = {
+        id: newUser.id,
+        uid: newUser.uid,
+        firstName: newUser.first_name,
+        lastName: newUser.last_name,
+        email: newUser.email,
+        subCommunity: newUser.sub_community,
+        techSkills: newUser.tech_skills,
+        phoneNumber: newUser.phone_number,
+        gender: newUser.gender,
+        profilePicture: profilePicRecord
+            ? {
+                url: profilePicRecord.image_url,
+                name: profilePicRecord.name,
+            }
+            : null,
+        createdAt: newUser.created_at,
+    };
+    return (0, response_1.createdResponse)(res, responseData, `/api/v3/users/${newUser.id}`, "User registered successfully");
+}));
+/**
+ * Update user
+ * @route PUT /api/v3/users/:id
+ * @access Admin or Owner
+ */
+exports.updateUser = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const { id } = req.params;
+    const userId = parseInt(id);
+    const updateData = req.body;
+    const profilePic = req.file;
+    if (isNaN(userId)) {
+        throw error_1.AppError.badRequest("Invalid user ID");
     }
-});
-exports.default = { getUsers, getUserDetails, create };
+    // Check if user exists
+    const existingUser = yield client_1.default.user.findUnique({
+        where: { id: userId },
+        include: { roles: true },
+    });
+    if (!existingUser) {
+        throw error_1.AppError.userNotFound(userId);
+    }
+    // Check permissions
+    const canUpdate = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) === userId ||
+        (0, permissions_1.hasPermission)(req.user.role, api_types_1.Permission.UPDATE_USER);
+    if (!canUpdate) {
+        throw error_1.AppError.forbidden("Cannot update this user");
+    }
+    // If email is being updated, check for conflicts
+    if (updateData.email && updateData.email !== existingUser.email) {
+        const emailExists = yield client_1.default.user.findUnique({
+            where: { email: updateData.email },
+        });
+        if (emailExists) {
+            throw error_1.AppError.emailAlreadyExists(updateData.email);
+        }
+    }
+    // Handle profile picture upload
+    let profilePicRecord = null;
+    if (profilePic) {
+        try {
+            const uploadedImage = yield (0, imageUploadHandler_1.uploadSingleImage)(profilePic);
+            profilePicRecord = yield client_1.default.image.create({
+                data: {
+                    name: `${updateData.firstName || existingUser.first_name} ${updateData.lastName || existingUser.last_name} Profile Picture`,
+                    image_url: uploadedImage.url,
+                    public_id: uploadedImage.public_id,
+                },
+            });
+        }
+        catch (error) {
+            throw error_1.AppError.fileUploadError("Failed to upload profile picture", error);
+        }
+    }
+    // Update user
+    const updatedUser = yield client_1.default.user.update({
+        where: { id: userId },
+        data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (updateData.firstName && { first_name: updateData.firstName })), (updateData.lastName && { last_name: updateData.lastName })), (updateData.email && { email: updateData.email })), (updateData.phoneNumber !== undefined && {
+            phone_number: updateData.phoneNumber,
+        })), (updateData.gender && { gender: updateData.gender })), (updateData.subCommunities && {
+            sub_community: updateData.subCommunities,
+        })), (updateData.techSkills && { tech_skills: updateData.techSkills })), (profilePicRecord && { profile_pic: profilePicRecord.id })),
+        include: {
+            roles: true,
+        },
+    });
+    // Get profile picture
+    let profilePicture = null;
+    if (updatedUser.profile_pic) {
+        const image = yield client_1.default.image.findUnique({
+            where: { id: updatedUser.profile_pic },
+            select: { image_url: true, name: true },
+        });
+        profilePicture = image;
+    }
+    const responseData = {
+        id: updatedUser.id,
+        uid: updatedUser.uid,
+        firstName: updatedUser.first_name,
+        lastName: updatedUser.last_name,
+        email: updatedUser.email,
+        role: ((_b = updatedUser.roles) === null || _b === void 0 ? void 0 : _b.role) || "user",
+        subCommunity: updatedUser.sub_community,
+        techSkills: updatedUser.tech_skills,
+        phoneNumber: updatedUser.phone_number,
+        gender: updatedUser.gender,
+        profilePicture,
+        updatedAt: updatedUser.updated_at,
+    };
+    return (0, response_1.successResponse)(res, responseData, 200, "User updated successfully");
+}));
+/**
+ * Delete user
+ * @route DELETE /api/v3/users/:id
+ * @access Admin only
+ */
+exports.deleteUser = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { id } = req.params;
+    const userId = parseInt(id);
+    if (isNaN(userId)) {
+        throw error_1.AppError.badRequest("Invalid user ID");
+    }
+    // Prevent self-deletion
+    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.id) === userId) {
+        throw error_1.AppError.badRequest("Cannot delete your own account");
+    }
+    const user = yield client_1.default.user.findUnique({
+        where: { id: userId },
+    });
+    if (!user) {
+        throw error_1.AppError.userNotFound(userId);
+    }
+    // Delete user (this will cascade to related records based on schema)
+    yield client_1.default.user.delete({
+        where: { id: userId },
+    });
+    return (0, response_1.successResponse)(res, { id: userId }, 200, "User deleted successfully");
+}));
+/**
+ * Admin registration with role assignment
+ * @route POST /api/v3/admin/register
+ * @access Superadmin only
+ */
+exports.registerAdmin = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { firstName, lastName, email, password } = req.body;
+    const role = "superadmin";
+    // Check if user already exists
+    const existingUser = yield client_1.default.user.findUnique({
+        where: { email },
+    });
+    if (existingUser) {
+        throw error_1.AppError.emailAlreadyExists(email);
+    }
+    // Get or create role
+    let userRole = yield client_1.default.role.findUnique({
+        where: { role },
+    });
+    if (!userRole) {
+        userRole = yield client_1.default.role.create({
+            data: { role },
+        });
+    }
+    // Hash password
+    const saltRounds = 12;
+    const hashedPassword = yield bcrypt_1.default.hash(password, saltRounds);
+    // Create admin user
+    const newAdmin = yield client_1.default.user.create({
+        data: {
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            hashed_password: hashedPassword,
+            roleId: userRole.id,
+        },
+        include: {
+            roles: true,
+        },
+    });
+    // Generate tokens
+    const tokens = (0, auth_1.generateTokens)(newAdmin);
+    const responseData = {
+        user: {
+            id: newAdmin.id,
+            uid: newAdmin.uid,
+            firstName: newAdmin.first_name,
+            lastName: newAdmin.last_name,
+            email: newAdmin.email,
+            role: (_a = newAdmin.roles) === null || _a === void 0 ? void 0 : _a.role,
+            createdAt: newAdmin.created_at,
+        },
+        tokens,
+    };
+    return (0, response_1.createdResponse)(res, responseData, `/api/v3/users/${newAdmin.id}`, "Admin account created successfully");
+}));
+/**
+ * User login
+ * @route POST /api/v3/auth/login
+ * @access Public
+ */
+exports.loginUser = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { email, password } = req.body;
+    // Find user with password
+    const user = yield client_1.default.user.findUnique({
+        where: { email },
+        include: { roles: true },
+    });
+    if (!user || !user.hashed_password) {
+        throw error_1.AppError.invalidCredentials();
+    }
+    // Verify password
+    const isPasswordValid = yield bcrypt_1.default.compare(password, user.hashed_password);
+    if (!isPasswordValid) {
+        throw error_1.AppError.invalidCredentials();
+    }
+    // Generate tokens
+    const tokens = (0, auth_1.generateTokens)(user);
+    const responseData = {
+        user: {
+            id: user.id,
+            uid: user.uid,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            email: user.email,
+            role: ((_a = user.roles) === null || _a === void 0 ? void 0 : _a.role) || "user",
+            subCommunity: user.sub_community,
+            techSkills: user.tech_skills,
+            phoneNumber: user.phone_number,
+            gender: user.gender,
+        },
+        tokens,
+    };
+    return (0, response_1.successResponse)(res, responseData, 200, "Login successful");
+}));
+exports.default = {
+    getUsers: exports.getUsers,
+    getUserById: exports.getUserById,
+    createUser: exports.createUser,
+    updateUser: exports.updateUser,
+    deleteUser: exports.deleteUser,
+    registerAdmin: exports.registerAdmin,
+    loginUser: exports.loginUser,
+};
