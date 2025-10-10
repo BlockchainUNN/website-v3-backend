@@ -39,7 +39,12 @@ const corsOptions = {
     // Define allowed origins based on environment
     const allowedOrigins =
       NODE_ENV === "production"
-        ? process.env.ALLOWED_ORIGINS?.split(",") || []
+        ? [
+            "https://www.blockchainunn.org",
+            "https://blockchainunn.org",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+          ]
         : ["http://localhost:3000", "http://127.0.0.1:3000", origin];
 
     if (allowedOrigins.includes(origin)) {
