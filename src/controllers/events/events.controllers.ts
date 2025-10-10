@@ -829,7 +829,7 @@ export const registerForEvent = asyncHandler(
       await sendMail(
         user.email,
         `${user.first_name}, Welcome to Blockathon!!!`,
-        "event_registeration",
+        "event_registration",
         { firstName: user.first_name }
       );
     } catch (emailError) {

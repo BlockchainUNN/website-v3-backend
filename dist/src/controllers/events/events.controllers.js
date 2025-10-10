@@ -618,7 +618,7 @@ exports.registerForEvent = (0, errorHandler_1.asyncHandler)((req, res) => __awai
     });
     // Send welcome email
     try {
-        yield (0, mailHandler_1.sendMail)(user.email, `${user.first_name}, Welcome to Blockathon!!!`, "event_registeration", { firstName: user.first_name });
+        yield (0, mailHandler_1.sendMail)(user.email, `${user.first_name}, Welcome to Blockathon!!!`, "event_registration", { firstName: user.first_name });
     }
     catch (emailError) {
         console.warn("Failed to send welcome email:", emailError);
