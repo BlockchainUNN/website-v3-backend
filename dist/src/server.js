@@ -58,6 +58,7 @@ const corsOptions = {
     credentials: true, // Allow cookies and auth headers
 };
 app.use((0, cors_1.default)(corsOptions));
+app.options("*", (0, cors_1.default)(corsOptions)); // ✅ Fix preflight handling
 // Body parsing middleware
 app.use(body_parser_1.default.urlencoded({ extended: true, limit: "10mb" }));
 app.use(body_parser_1.default.json({ limit: "10mb" }));

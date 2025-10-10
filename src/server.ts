@@ -58,6 +58,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ Fix preflight handling
 
 // Body parsing middleware
 app.use(bodyParser.urlencoded({ extended: true, limit: "10mb" }));
