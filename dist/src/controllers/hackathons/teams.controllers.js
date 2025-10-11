@@ -41,7 +41,7 @@ exports.createTeam = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(vo
     }
     // Check if hackathon exists
     const hackathon = yield client_1.default.hackathon.findUnique({
-        where: { unique_name: hackathonId },
+        where: { id: Number(hackathonId) },
     });
     if (!hackathon) {
         throw error_1.AppError.notFound("Hackathon not found");
@@ -55,7 +55,7 @@ exports.createTeam = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(vo
     const hacker = yield client_1.default.hacker.findFirst({
         where: {
             user: { email: userEmail },
-            hackathon: { unique_name: hackathonId },
+            hackathon: { id: Number(hackathonId) },
         },
     });
     if (!hacker) {
@@ -157,7 +157,7 @@ exports.joinTeam = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void
     }
     // Check if hackathon exists
     const hackathon = yield client_1.default.hackathon.findUnique({
-        where: { unique_name: hackathonId },
+        where: { id: Number(hackathonId) },
     });
     if (!hackathon) {
         throw error_1.AppError.notFound("Hackathon not found");
@@ -171,7 +171,7 @@ exports.joinTeam = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void
     const hacker = yield client_1.default.hacker.findFirst({
         where: {
             user: { email: userEmail },
-            hackathon: { unique_name: hackathonId },
+            hackathon: { id: Number(hackathonId) },
         },
     });
     if (!hacker) {
@@ -260,7 +260,7 @@ exports.getTeam = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 
     // Get hacker registration
     const hacker = yield client_1.default.hacker.findFirst({
         where: {
-            hackathon: { unique_name: hackathonId },
+            hackathon: { id: Number(hackathonId) },
             user: { email: userEmail },
         },
     });
@@ -355,7 +355,7 @@ exports.leaveTeam = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(voi
     // Get hacker registration
     const hacker = yield client_1.default.hacker.findFirst({
         where: {
-            hackathon: { unique_name: hackathonId },
+            hackathon: { id: Number(hackathonId) },
             user: { email: userEmail },
         },
         include: {
@@ -379,7 +379,7 @@ exports.leaveTeam = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(voi
     const team = hacker.team;
     // Check if hackathon has started (prevent leaving after start)
     const hackathon = yield client_1.default.hackathon.findUnique({
-        where: { unique_name: hackathonId },
+        where: { id: Number(hackathonId) },
     });
     if (hackathon && new Date() >= hackathon.start_date) {
         throw error_1.AppError.badRequest("Cannot leave team after hackathon has started");

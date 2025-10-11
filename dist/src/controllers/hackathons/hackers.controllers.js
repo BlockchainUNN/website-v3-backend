@@ -165,7 +165,7 @@ exports.loginHacker = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(v
     }
     // Check if hackathon exists
     const hackathon = yield client_1.default.hackathon.findUnique({
-        where: { unique_name: hackathonUid },
+        where: { id: Number(hackathonUid) },
     });
     if (!hackathon) {
         throw error_1.AppError.notFound("Hackathon not found");
