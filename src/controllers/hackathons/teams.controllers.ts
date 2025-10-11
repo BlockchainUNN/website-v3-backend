@@ -36,7 +36,7 @@ export const createTeam = asyncHandler(async (req: Request, res: Response) => {
 
   // Check if hackathon exists
   const hackathon = await prisma.hackathon.findUnique({
-    where: { unique_name: hackathonId },
+    where: { id: Number(hackathonId) },
   });
 
   if (!hackathon) {
@@ -53,7 +53,7 @@ export const createTeam = asyncHandler(async (req: Request, res: Response) => {
   const hacker = await prisma.hacker.findFirst({
     where: {
       user: { email: userEmail },
-      hackathon: { unique_name: hackathonId },
+      hackathon: { id: Number(hackathonId) },
     },
   });
 
@@ -208,7 +208,7 @@ export const joinTeam = asyncHandler(async (req: Request, res: Response) => {
 
   // Check if hackathon exists
   const hackathon = await prisma.hackathon.findUnique({
-    where: { unique_name: hackathonId },
+    where: { id: Number(hackathonId) },
   });
 
   if (!hackathon) {
@@ -225,7 +225,7 @@ export const joinTeam = asyncHandler(async (req: Request, res: Response) => {
   const hacker = await prisma.hacker.findFirst({
     where: {
       user: { email: userEmail },
-      hackathon: { unique_name: hackathonId },
+      hackathon: { id: Number(hackathonId) },
     },
   });
 
@@ -325,7 +325,7 @@ export const getTeam = asyncHandler(async (req: Request, res: Response) => {
   // Get hacker registration
   const hacker = await prisma.hacker.findFirst({
     where: {
-      hackathon: { unique_name: hackathonId },
+      hackathon: { id: Number(hackathonId) },
       user: { email: userEmail },
     },
   });
@@ -445,7 +445,7 @@ export const leaveTeam = asyncHandler(async (req: Request, res: Response) => {
   // Get hacker registration
   const hacker = await prisma.hacker.findFirst({
     where: {
-      hackathon: { unique_name: hackathonId },
+      hackathon: { id: Number(hackathonId) },
       user: { email: userEmail },
     },
     include: {
@@ -473,7 +473,7 @@ export const leaveTeam = asyncHandler(async (req: Request, res: Response) => {
 
   // Check if hackathon has started (prevent leaving after start)
   const hackathon = await prisma.hackathon.findUnique({
-    where: { unique_name: hackathonId },
+    where: { id: Number(hackathonId) },
   });
 
   if (hackathon && new Date() >= hackathon.start_date) {

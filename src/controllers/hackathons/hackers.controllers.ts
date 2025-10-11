@@ -191,7 +191,7 @@ export const loginHacker = asyncHandler(async (req: Request, res: Response) => {
 
   // Check if hackathon exists
   const hackathon = await prisma.hackathon.findUnique({
-    where: { unique_name: hackathonUid },
+    where: { id: Number(hackathonUid) },
   });
 
   if (!hackathon) {
